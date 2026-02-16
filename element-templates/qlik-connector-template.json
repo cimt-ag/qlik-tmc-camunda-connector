@@ -1,0 +1,249 @@
+{
+  "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
+  "name": "TMC outbound connector",
+  "id": "cimt_tmc_outbound_connector",
+  "version": 1,
+  "description": "A connector to manage and execute tasks and plans of the tmc",
+  "category": {
+    "id": "connectors",
+    "name": "Connectors"
+  },
+  "appliesTo": [
+    "bpmn:Task"
+  ],
+  "groups": [
+    {
+      "id": "authentication",
+      "label": "Authentication"
+    },
+    {
+      "id": "endpoint",
+      "label": "Endpoint"
+    },
+    {
+      "id": "payload",
+      "label": "Payload"
+    },
+    {
+      "id": "output",
+      "label": "Output Mapping"
+    }
+  ],
+  "properties": [
+    {
+      "id": "authentication.authenticationType",
+      "label": "Credentials Type",
+      "description": "Choose the Credential type you want to use",
+      "optional": false,
+      "type": "Dropdown",
+      "group": "authentication",
+      "value": "authenticationType",
+      "choices": [
+        {
+          "name": "base64 encoded secret",
+          "value": "base64"
+        },
+        {
+          "name": "Service Account Credentials Set",
+          "value": "credentialsSet"
+        }
+      ],
+      "binding": {
+        "type": "zeebe:input",
+        "name": "authenticationType"
+      }
+    },
+    {
+      "id": "authentication.serviceAccountId",
+      "label": "Client ID",
+      "description": "Your service account's ID to connect to the TMC",
+      "optional": false,
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "authentication.authenticationType",
+        "equals": "credentialsSet",
+        "type": "simple"
+      },
+      "feel": "optional",
+      "group": "authentication",
+      "binding": {
+        "name": "authentication.serviceAccountId",
+        "type": "zeebe:input"
+      },
+      "type": "String"
+    },
+    {
+      "id": "authentication.accountSecret",
+      "label": "Account secret",
+      "description": "Your service account's secret to connect to the TMC",
+      "optional": false,
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "authentication.authenticationType",
+        "equals": "credentialsSet",
+        "type": "simple"
+      },
+      "feel": "optional",
+      "group": "authentication",
+      "binding": {
+        "name": "authentication.accountSecret",
+        "type": "zeebe:input"
+      },
+      "type": "String"
+    },
+    {
+      "id": "authentication.base64Credentials",
+      "label": "Base64 Credentials",
+      "description": "Base64 encoded credentials to provide the service account credentials - please provide eighter this base64 encoded secret or the accounts id and accounts secret",
+      "optional": false,
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "authentication.authenticationType",
+        "equals": "base64",
+        "type": "simple"
+      },
+      "feel": "optional",
+      "group": "authentication",
+      "binding": {
+        "name": "authentication.base64Credentials",
+        "type": "zeebe:input"
+      },
+      "type": "String"
+    },
+    {
+      "id": "endpoint.entity",
+      "label": "TMC Entity",
+      "description": "Choose the Entity to use",
+      "optional": false,
+      "type": "Dropdown",
+      "group": "endpoint",
+      "value": "tmc_api_entity",
+      "choices": [
+        {
+          "name": "Task",
+          "value": "task"
+        },
+        {
+          "name": "Plan",
+          "value": "plan"
+        }
+      ],
+      "binding": {
+        "type": "zeebe:input",
+        "name": "tmc_api_entity"
+      }
+    },
+    {
+      "id": "endpoint.taskApi",
+      "label": "TMC Task API",
+      "description": "Choose the Task API to use",
+      "optional": false,
+      "type": "Dropdown",
+      "group": "endpoint",
+      "value": "tmc_taskApi",
+      "condition": {
+        "property": "endpoint.entity",
+        "equals": "task",
+        "type": "simple"
+      },
+      "choices": [
+        {
+          "name": "Get available Tasks",
+          "value": "get_tasks"
+        },
+        {
+          "name": "Search Tasks",
+          "value": "search_tasks"
+        },
+        {
+          "name": "GET Task Execution",
+          "value": "get_task_execution"
+        },
+        {
+          "name": "Get Task by ID",
+          "value": "get_task_by_id"
+        },
+        {
+          "name": "Execute Task",
+          "value": "execute_task"
+        },
+        {
+          "name": "Get Task execution status",
+          "value": "get_task_execution_status"
+        },
+        {
+          "name": "Terminate Task Execution",
+          "value": "terminate_task_execution"
+        }
+      ],
+      "binding": {
+        "type": "zeebe:input",
+        "name": "tmc_taskApi"
+      }
+    },
+    {
+      "id": "endpoint.planApi",
+      "label": "TMC Plan API",
+      "description": "Choose the Plan API to use",
+      "optional": false,
+      "type": "Dropdown",
+      "group": "endpoint",
+      "value": "tmc_PlanApi",
+      "condition": {
+        "property": "endpoint.entity",
+        "equals": "plan",
+        "type": "simple"
+      },
+      "choices": [
+        {
+          "name": "TBD",
+          "value": "tbd"
+        }
+      ],
+      "binding": {
+        "type": "zeebe:input",
+        "name": "tmc_planApi"
+      }
+    },
+    {
+      "id": "resultVariable",
+      "label": "Result variable",
+      "description": "Name of variable to store the response in",
+      "group": "output",
+      "binding": {
+        "key": "resultVariable",
+        "type": "zeebe:taskHeader"
+      },
+      "type": "String"
+    },
+    {
+      "id": "resultExpression",
+      "label": "Result expression",
+      "description": "Expression to map the response into process variables",
+      "feel": "required",
+      "group": "output",
+      "binding": {
+        "key": "resultExpression",
+        "type": "zeebe:taskHeader"
+      },
+      "type": "Text"
+    },
+    {
+      "type": "Hidden",
+      "value": "io.camunda:cimt-qlik-connector-api:1",
+      "binding": {
+        "type": "zeebe:taskDefinition",
+        "property": "type"
+      }
+    }
+  ],
+  "icon": {
+    "contents": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADo0lEQVR42rWXT0SkYRzHxxh5Z2SMjDWysjKSJB0yspIkyVgdOiQdsofMsNZaHZIOS9YaK1nJSPbQYQ8rK52yhyTpsJK1kiRZzWuNpEPGGus1svv5jale77x/Zt5tho9nnmee5/f7/n7P3/FU88kkFC80Z5L+QTXpn4P3asL/jvoY7X2ZhD9IGQAf7Y723DjvxOk+3MBfE3KwgZBxyiaEKZQPJiAC62pC0cSZHURfgO98fwFPEOL7L+cqBnD+msiy4qBSGKNlkso6AnoRFHAtAAOtGNsWoy45QMAY2Qu6TL//FQYuqnCoQRZ+MHaXcotMLBFE1M3cN8CqzKuD0xsydU2Ue/RP01/mfxA6oEWgvd5N9DE1qew6zTXsEOUMAp6aOHL/wfkonFo6Z+vheJGym3qd56E/GJ2ErEXktBd3R8RTqw+RzUK+3Ln/FwLWYAOW6TNNOQLRaiPsx1irze+p8oMGQZwLOGtnbBo0BFxSP4UdSFFnLVQwJRhbwuiKzSKcgmuDgE/QiCMPNNGW1u8GxF2zLg75Pq8SnJOAfZlLGLUQkICsLvUn0IUTb2mbSpairIVtk22Zo69kZAh8VgI06UyHY+gz2QXDGDm6j16ZgaDJUd1P1Jcmi7XAb0f4iZuK0G0nEXFoFEG9S6Iopf4cusBoQwIJwZzVIQUnMAA+UwH6FGNoBEF1YhgURKyAGFmARzYLtgOszwyyTJYkAK9+UMGk4wUC3src0jlA/TmcwYTdYcPUhOkzb3dqImANm48p71J8ZnGna2TjG7ykzzDlF8pBWXyGNeSRbGGwgTJKn2lKzSYLebkZ7wKhYbOCB8ZZabfMwQD0QKxU9uJwHIEfEPGV+jbfjx1s7kEEilMw5eaOx9mVyrowXEhbEIfPTuMR2YNwrwhox1heGt2CoQJIhoYhAosVjBstPtXoHEDApmsBieL23cfYs7v3AwvYYdw5tMluuH3txjlwflfrnDT+KV1GcXFeqQDGvYF6/WkXgtUqnR/hLAVthoOrEdI2u+AAOC90Z4HMBcRk2zk4zsluoF8KhhgTMrk7WmDDwvkVTDAuYHYnKAzs58cFSlnF67fQ9pGBszAG3fRtAK/F+yEGhyYZy4Ec1WG7B6gPItAMLTqaIAheh8dLndyqOMmXR07WsKO3UYvnm4hfNkSfpW0GAY21cG6cxk74eX+UK7swgvMQ9Zo7D3MyLsmhJo4RMSGXDhgur9qlP4zzScoOCICvkn/G/wC2FuY+yUnk/QAAAABJRU5ErkJggg=="
+  }
+}
