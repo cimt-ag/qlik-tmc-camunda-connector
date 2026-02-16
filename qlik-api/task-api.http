@@ -1,7 +1,8 @@
 @taskId="abc"
 @executionId="abc"
+@taskName="SimpleHelloWorld"
+@tmcEnvironment="PreSales_Testing"
 @talendVersion="123"
-@secret="foo:bar"
 
 ### Authenticate at TMC
 # talend-version is optional
@@ -15,14 +16,13 @@
 # returns
 # @name Bearer
 POST {{endpoint}}/security/oauth/token
-
-Authorization: Basic {{secret}}
+Authorization: Basic lennart.prochnow@cimt-ag.de:{{personal_access_token}}
 Content-Type: application/json
 Accept: application/json
 
 {
     "grand_type": "client_credentials",
-    "audience": "{{endpoint}}",
+    "audience": "{{endpoint}}"
 }
 
 ### GET available Tasks
@@ -37,9 +37,8 @@ Accept: application/json
 #   - Auflisten ALLER möglichen Task
 #
 # documentation: https://talend.qlik.dev/apis/orchestration/2021-03/#operation_get-available-tasks
-GET {endpoint}/orchestration/executables/tasks
-
-Authorization: Bearer {Bearer.access_token}
+GET {{endpoint}}/orchestration/executables/tasks
+Authorization: Bearer {{Bearer.access_token}}
 Content-Type: application/json
 
 ### Search Tasks
@@ -54,13 +53,12 @@ Content-Type: application/json
 #   - can be visualized for the user
 #
 # documentation: https://talend.qlik.dev/apis/orchestration/2021-03/#operation_search-tasks
-POST {endpoint}/orchestration/executables/tasks/search
-
-Authorziation: Bearer {Bearer.access_token}
+POST {{endpoint}}/orchestration/executables/tasks/search
+Authorziation: Bearer {{personal_access_token}}
 
 {
-    "name": "foo",
-    "environmentId": "bar"
+    "name": {{taskName}},
+    "environmentId": {{tmcEnvironment}}
 }
 
 
@@ -82,9 +80,8 @@ Authorziation: Bearer {Bearer.access_token}
 #   - Troubleshooting a handing task run
 #
 # Documentation: https://talend.qlik.dev/apis/processing/2021-03/#operation_get-task-executions
-GET {endpoint}/processing/executables/tasks/{taskId}/executions
-
-Authorization: Bearer {Bearer.access_token}
+GET {{endpoint}}/processing/executables/tasks/{taskId}/executions
+Authorization: Bearer {{Bearer.access_token}}
 Content-Type: application/json
 
 ### Get Task by ID
@@ -97,9 +94,8 @@ Content-Type: application/json
 # Usecases:
 #   - Definition des Tasks anzeigen - was könnte der Nutzer mit diesen Informationen machen?
 #
-GET {endpoint}/orchestration/executables/tasks/{taskId}
-
-Authorization: Bearer {Bearer.access_token}
+GET {{endpoint}}/orchestration/executables/tasks/{taskId}
+Authorization: Bearer {{Bearer.access_token}}
 Content-Type: application/json
 
 ### Execute Task
@@ -109,9 +105,9 @@ Content-Type: application/json
 #   - Exeuctionidentifier -> executionId
 #
 # Documentation: https://talend.qlik.dev/apis/processing/2021-03/#operation_execute-task
-POST {endpoint}/processing/executions
-
-Authorization: Bearer {Bearer.access_token}
+POST {{endpoint}}/processing/executions
+Authorization: Bearer {{Bearer.access_token}}
+Content-Type: application/json
 
 {
     "executable": "abc",
@@ -131,9 +127,9 @@ Authorization: Bearer {Bearer.access_token}
 #   - check if the job finished successfully
 #
 # Documentation: https://talend.qlik.dev/apis/processing/2021-03/#operation_get-task-execution-status
-GET {endpoint}/processing/executions/{executionId}
-
-Authorization: Bearer {Bearer.access_token}
+GET {{endpoint}}/processing/executions/{executionId}
+Authorization: Bearer {{Bearer.access_token}}
+Content-Type: application/json
 
 ### Get componente metrics of task runs
 # Get the Metrics of the components within a given task run
@@ -149,9 +145,9 @@ Authorization: Bearer {Bearer.access_token}
 #   - Drill down in error tracking
 #
 # Documentation: https://talend.qlik.dev/apis/observability-metrics/2021-03/#operation_get-component-metrics-of-task-runs
-GET {endpoint}/monitoring/observability/executions/{executionId}/component
-
-Authorization: Bearer {Bearer.access_token}
+GET {{endpoint}}/monitoring/observability/executions/{executionId}/component
+Authorization: Bearer {{Bearer.access_token}}
+Content-Type: application/json
 
 ### Terminate Task Execution
 # Termine the execution of a task
@@ -160,12 +156,14 @@ Authorization: Bearer {Bearer.access_token}
 #   - Ein Fehler ist aufgetreten oder der Prozess verlangt, dass die Execution beendet werden muss
 #
 # Documentation: https://talend.qlik.dev/apis/processing/2021-03/#operation_terminate-task-execution
-DELETE {endpoint}/processing/executions/{executionId}
-
-Authorization: Bearer {Bearer.access_token}
+DELETE {{endpoint}}/processing/executions/{executionId}
+Authorization: Bearer {{Bearer.access_token}}
+Content-Type: application/json
 
 ### Get Task run-config
-GET {endpoint}/orchestration/executables/tasks/{taskId}/run-config
+GET {{endpoint}}/orchestration/executables/tasks/{taskId}/run-config
+Authorization: Bearer {{Bearer.access_token}}
+Content-Type: application/json
 
 {
     "trigger": {},
