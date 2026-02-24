@@ -134,11 +134,11 @@
         <configuration>
           <connectors>
             <connector>
-              <connectorClass>io.camunda.example.MyConnector</connectorClass>
+              <connectorClass>io.camunda.example.TMCTaskConnector</connectorClass>
               <files>
                 <file>
-                  <templateId>io.camunda.example.template.v1</templateId>
-                  <templateFileName>my-connector.json</templateFileName>
+                  <templateId>io.camunda.cimt.qlik-tmc-outbound-connector.v1</templateId>
+                  <templateFileName>qlik-connector-template.json</templateFileName>
                 </file>
               </files>
             </connector>
