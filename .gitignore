@@ -65,3 +65,6 @@ request*.json
 
 element-templates/.DS_Store
 .DS_Store
+
+# ignore to prevent leaking secrets
+src/test/resources/application.yaml

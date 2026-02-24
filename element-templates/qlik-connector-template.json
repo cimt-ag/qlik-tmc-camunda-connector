@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
   "name": "TMC outbound connector",
-  "id": "cimt_tmc_outbound_connector",
+  "id": "io.camunda.cimt.qlik-tmc-outbound-connector.v1",
   "version": 1,
   "description": "A connector to manage and execute tasks and plans of the tmc",
   "category": {
@@ -11,7 +11,17 @@
   "appliesTo": [
     "bpmn:Task"
   ],
+  "elementType": {
+    "value": "bpmn:ServiceTask"
+  },
+  "engines": {
+    "camunda": "^8.8"
+  },
   "groups": [
+    {
+      "id": "connector",
+      "label": "Connector"
+    },
     {
       "id": "authentication",
       "label": "Authentication"
@@ -31,13 +41,33 @@
   ],
   "properties": [
     {
+      "value": "io.camunda:cimt-qlik-tmc-outbound-connector",
+      "type": "Hidden",
+      "binding": {
+        "property": "type",
+        "type": "zeebe:taskDefinition"
+      }
+    },
+    {
+      "id" : "id",
+      "label" : "ID",
+      "description" : "ID of the element template",
+      "value" : "io.camunda.cimt_qlik_tmc_outbound_connector.v1",
+      "group" : "connector",
+      "binding" : {
+        "key" : "elementTemplateId",
+        "type" : "zeebe:taskHeader"
+      },
+      "type" : "Hidden"
+    },
+    {
       "id": "authentication.authenticationType",
       "label": "Credentials Type",
       "description": "Choose the Credential type you want to use",
       "optional": false,
       "type": "Dropdown",
       "group": "authentication",
-      "value": "authenticationType",
+      "value": "bearerToken",
       "choices": [
         {
           "name": "base64 encoded secret",
@@ -46,11 +76,15 @@
         {
           "name": "Service Account Credentials Set",
           "value": "credentialsSet"
+        },
+        {
+          "name": "Bearer Token",
+          "value": "bearerToken"
         }
       ],
       "binding": {
         "type": "zeebe:input",
-        "name": "authenticationType"
+        "name": "authentication.authenticationType"
       }
     },
     {
@@ -117,13 +151,34 @@
       "type": "String"
     },
     {
+      "id": "authentication.bearerToken",
+      "label": "Bearer Token",
+      "description": "Bearer Token credentials to authenticate to the TMC (personal access token)",
+      "optional": false,
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "authentication.authenticationType",
+        "equals": "bearerToken",
+        "type": "simple"
+      },
+      "feel": "optional",
+      "group": "authentication",
+      "binding": {
+        "name": "authentication.bearerToken",
+        "type": "zeebe:input"
+      },
+      "type": "String"
+    },
+    {
       "id": "endpoint.entity",
       "label": "TMC Entity",
       "description": "Choose the Entity to use",
       "optional": false,
       "type": "Dropdown",
       "group": "endpoint",
-      "value": "tmc_api_entity",
+      "value": "task",
       "choices": [
         {
           "name": "Task",
@@ -136,17 +191,52 @@
       ],
       "binding": {
         "type": "zeebe:input",
-        "name": "tmc_api_entity"
+        "name": "endpoint.entity"
       }
     },
     {
-      "id": "endpoint.taskApi",
+      "id": "endpoint.region",
+      "label": "TMC Region",
+      "description": "Choose the Region of the TMC",
+      "optional": false,
+      "type": "Dropdown",
+      "group": "endpoint",
+      "value": "europe",
+      "choices": [
+        {
+          "name": "AWS Europe Region",
+          "value": "europe"
+        },
+        {
+          "name": "AWS Asia Pacific Region",
+          "value": "pacific"
+        },
+        {
+          "name": "AWS United States East Region",
+          "value": "us_east"
+        },
+        {
+          "name": "Azure United States West Region",
+          "value": "us_west"
+        },
+        {
+          "name": "AWS Australia Region",
+          "value": "australia"
+        }
+      ],
+      "binding": {
+        "type": "zeebe:input",
+        "name": "endpoint.region"
+      }
+    },
+    {
+      "id": "operation",
       "label": "TMC Task API",
       "description": "Choose the Task API to use",
       "optional": false,
       "type": "Dropdown",
       "group": "endpoint",
-      "value": "tmc_taskApi",
+      "value": "getTasks",
       "condition": {
         "property": "endpoint.entity",
         "equals": "task",
@@ -155,61 +245,63 @@
       "choices": [
         {
           "name": "Get available Tasks",
-          "value": "get_tasks"
+          "value": "getTasks"
         },
         {
           "name": "Search Tasks",
-          "value": "search_tasks"
+          "value": "searchTasks"
         },
         {
           "name": "GET Task Execution",
-          "value": "get_task_execution"
+          "value": "getTaskExecution"
         },
         {
           "name": "Get Task by ID",
-          "value": "get_task_by_id"
+          "value": "getTaskById"
         },
         {
           "name": "Execute Task",
-          "value": "execute_task"
+          "value": "executeTask"
         },
         {
           "name": "Get Task execution status",
-          "value": "get_task_execution_status"
+          "value": "getTaskExecutionStatus"
         },
         {
           "name": "Terminate Task Execution",
-          "value": "terminate_task_execution"
+          "value": "terminateTaskExecution"
         }
       ],
       "binding": {
-        "type": "zeebe:input",
-        "name": "tmc_taskApi"
+        "type": "zeebe:taskHeader",
+        "key": "operation"
       }
     },
     {
-      "id": "endpoint.planApi",
-      "label": "TMC Plan API",
-      "description": "Choose the Plan API to use",
-      "optional": false,
-      "type": "Dropdown",
-      "group": "endpoint",
-      "value": "tmc_PlanApi",
-      "condition": {
-        "property": "endpoint.entity",
-        "equals": "plan",
-        "type": "simple"
-      },
-      "choices": [
-        {
-          "name": "TBD",
-          "value": "tbd"
-        }
-      ],
+      "id": "payload.queryParameters",
+      "label": "Query parameters",
+      "description": "Map of query parameters to add to the request URL",
+      "optional": true,
+      "feel": "required",
+      "group": "payload",
       "binding": {
-        "type": "zeebe:input",
-        "name": "tmc_planApi"
-      }
+        "name": "payload.queryParameters",
+        "type": "zeebe:input"
+      },
+      "type": "String"
+    },
+    {
+      "id": "payload.body",
+      "label": "Request body",
+      "description": "Payload to send with the request",
+      "optional": true,
+      "feel": "optional",
+      "group": "payload",
+      "binding": {
+        "name": "payload.body",
+        "type": "zeebe:input"
+      },
+      "type": "Text"
     },
     {
       "id": "resultVariable",
@@ -233,14 +325,6 @@
         "type": "zeebe:taskHeader"
       },
       "type": "Text"
-    },
-    {
-      "type": "Hidden",
-      "value": "io.camunda:cimt-qlik-connector-api:1",
-      "binding": {
-        "type": "zeebe:taskDefinition",
-        "property": "type"
-      }
     }
   ],
   "icon": {
