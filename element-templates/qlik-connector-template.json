@@ -67,7 +67,7 @@
       "optional": false,
       "type": "Dropdown",
       "group": "authentication",
-      "value": "authenticationType",
+      "value": "bearerToken",
       "choices": [
         {
           "name": "base64 encoded secret",
@@ -84,7 +84,7 @@
       ],
       "binding": {
         "type": "zeebe:input",
-        "name": "authenticationType"
+        "name": "authentication.authenticationType"
       }
     },
     {
@@ -178,7 +178,7 @@
       "optional": false,
       "type": "Dropdown",
       "group": "endpoint",
-      "value": "tmc_api_entity",
+      "value": "task",
       "choices": [
         {
           "name": "Task",
@@ -191,7 +191,7 @@
       ],
       "binding": {
         "type": "zeebe:input",
-        "name": "tmc_api_entity"
+        "name": "endpoint.entity"
       }
     },
     {
@@ -201,7 +201,7 @@
       "optional": false,
       "type": "Dropdown",
       "group": "endpoint",
-      "value": "tmc_region",
+      "value": "europe",
       "choices": [
         {
           "name": "AWS Europe Region",
@@ -226,7 +226,7 @@
       ],
       "binding": {
         "type": "zeebe:input",
-        "name": "tmc_region"
+        "name": "endpoint.region"
       }
     },
     {
@@ -278,27 +278,27 @@
       }
     },
     {
-      "id": "queryParameters",
+      "id": "payload.queryParameters",
       "label": "Query parameters",
       "description": "Map of query parameters to add to the request URL",
       "optional": true,
       "feel": "required",
-      "group": "endpoint",
+      "group": "payload",
       "binding": {
-        "name": "queryParameters",
+        "name": "payload.queryParameters",
         "type": "zeebe:input"
       },
       "type": "String"
     },
     {
-      "id": "body",
+      "id": "payload.body",
       "label": "Request body",
       "description": "Payload to send with the request",
       "optional": true,
       "feel": "optional",
       "group": "payload",
       "binding": {
-        "name": "body",
+        "name": "payload.body",
         "type": "zeebe:input"
       },
       "type": "Text"

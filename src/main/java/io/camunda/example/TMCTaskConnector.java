@@ -6,7 +6,11 @@ import io.camunda.connector.api.annotation.Variable;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
 import io.camunda.example.model.GetAvailableTaskRequest;
+import io.camunda.example.model.TMCAuthentication;
+import io.camunda.example.model.TMCEndpoint;
 import io.camunda.example.model.TMCRegionToEndpoint;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,46 +19,40 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
-@OutboundConnector(name = "Qlik TMC Connector", type = "io.camunda:cimt-qlik-connector-api:1")
+@OutboundConnector(name = "Qlik TMC Connector", type = "io.camunda:cimt-qlik-tmc-outbound-connector")
 @ElementTemplate(
-        id = "cimt.camunda.qlik_tmc_outbound_connector.v1",
         name = "TMC outbound connector",
-        version = 1,
-        description = "A connector to manage and execute tasks and plans of the tmc",
-        icon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADo0lEQVR42rWXT0SkYRzHxxh5Z2SMjDWysjKSJB0yspIkyVgdOiQdsofMsNZaHZIOS9YaK1nJSPbQYQ8rK52yhyTpsJK1kiRZzWuNpEPGGus1svv5jale77x/Zt5tho9nnmee5/f7/n7P3/FU88kkFC80Z5L+QTXpn4P3asL/jvoY7X2ZhD9IGQAf7Y723DjvxOk+3MBfE3KwgZBxyiaEKZQPJiAC62pC0cSZHURfgO98fwFPEOL7L+cqBnD+msiy4qBSGKNlkso6AnoRFHAtAAOtGNsWoy45QMAY2Qu6TL//FQYuqnCoQRZ+MHaXcotMLBFE1M3cN8CqzKuD0xsydU2Ue/RP01/mfxA6oEWgvd5N9DE1qew6zTXsEOUMAp6aOHL/wfkonFo6Z+vheJGym3qd56E/GJ2ErEXktBd3R8RTqw+RzUK+3Ln/FwLWYAOW6TNNOQLRaiPsx1irze+p8oMGQZwLOGtnbBo0BFxSP4UdSFFnLVQwJRhbwuiKzSKcgmuDgE/QiCMPNNGW1u8GxF2zLg75Pq8SnJOAfZlLGLUQkICsLvUn0IUTb2mbSpairIVtk22Zo69kZAh8VgI06UyHY+gz2QXDGDm6j16ZgaDJUd1P1Jcmi7XAb0f4iZuK0G0nEXFoFEG9S6Iopf4cusBoQwIJwZzVIQUnMAA+UwH6FGNoBEF1YhgURKyAGFmARzYLtgOszwyyTJYkAK9+UMGk4wUC3src0jlA/TmcwYTdYcPUhOkzb3dqImANm48p71J8ZnGna2TjG7ykzzDlF8pBWXyGNeSRbGGwgTJKn2lKzSYLebkZ7wKhYbOCB8ZZabfMwQD0QKxU9uJwHIEfEPGV+jbfjx1s7kEEilMw5eaOx9mVyrowXEhbEIfPTuMR2YNwrwhox1heGt2CoQJIhoYhAosVjBstPtXoHEDApmsBieL23cfYs7v3AwvYYdw5tMluuH3txjlwflfrnDT+KV1GcXFeqQDGvYF6/WkXgtUqnR/hLAVthoOrEdI2u+AAOC90Z4HMBcRk2zk4zsluoF8KhhgTMrk7WmDDwvkVTDAuYHYnKAzs58cFSlnF67fQ9pGBszAG3fRtAK/F+yEGhyYZy4Ec1WG7B6gPItAMLTqaIAheh8dLndyqOMmXR07WsKO3UYvnm4hfNkSfpW0GAY21cG6cxk74eX+UK7swgvMQ9Zo7D3MyLsmhJo4RMSGXDhgur9qlP4zzScoOCICvkn/G/wC2FuY+yUnk/QAAAABJRU5ErkJggg==",
-        documentationRef =
-                "https://docs.camunda.io/docs/components/connectors/custom-built-connectors/connector-sdk/" // TODO: add documentation reference here
-)
+        id = "io.camunda.cimt.qlik-tmc-outbound-connector.v1",
+        version = 1)
 public class TMCTaskConnector implements OutboundConnectorProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TMCTaskConnector.class);
 
     private static final String GET_TASKS_API = "/orchestration/executables/tasks";
 
-    @Operation(id = "get_tasks", name = "get available tasks")
+    @Operation(id = "getTasks", name = "get available tasks")
     public Object getAvailableTasksRequest(@Variable GetAvailableTaskRequest request) {
-        LOGGER.info("hier bin ich angekommen");
+        LOGGER.info("Process: Get available tasks request");
 
-        // TODO: hier sollte ich eine Unterscheidung treffen, ob es sich um einen ServiceAccount Zugriff handelt oder um einen direkten Zugriff mit einem personal Access Token
-        // TODO: Das muss auch noch im Template berücksichtigt werden
+        final String bearerToken = authenticate(request.authentication());
 
-        final String baseUrl = TMCRegionToEndpoint.getEndpointByRegionName(request.region());
-        final URI uri = URI.create(baseUrl + GET_TASKS_API);
+        final URI uri = createUri(request.endpoint(), request.payload().queryParameters(), GET_TASKS_API);
 
-        HttpRequest tmcRequest = HttpRequest.newBuilder()
+        final HttpRequest tmcRequest = HttpRequest.newBuilder()
                 .uri(uri)
                 .GET()
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .header("Authorization", String.format("BEARER %s", request.authentication().bearer()))
+                .header("Authorization", "Bearer " + bearerToken)
                 .build();
 
-        HttpResponse<?> tmcResponse;
         try {
-            tmcResponse = HttpClient.newBuilder()
+            return HttpClient.newBuilder()
                     .build()
-                    .send(tmcRequest, HttpResponse.BodyHandlers.ofString());
+                    .send(tmcRequest, HttpResponse.BodyHandlers.ofString())
+                    .body();
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
             throw new RuntimeException(e);
@@ -62,7 +60,33 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
             LOGGER.error("interrupted");
             throw new RuntimeException(e);
         }
-
-        return "Moin";
     }
+
+    private String authenticate(@NotNull @Valid TMCAuthentication authentication) {
+        if (authentication.authenticationType() == null) {
+            throw new IllegalArgumentException("Authentication type is required - please provide valid Credentials");
+        }
+
+        if ("bearerToken".equals(authentication.authenticationType()) && authentication.bearerToken() != null) {
+            LOGGER.debug("Found Bearer Token in request - use bearer token for further authorization flow");
+            return authentication.bearerToken();
+        } else {
+            throw new UnsupportedOperationException("Other Authorizations than bearerToken Authorization are not supported yet");
+        }
+    }
+
+    private URI createUri(TMCEndpoint endpoint, Map<String, String> params, String api) {
+        StringBuilder url = new StringBuilder();
+        url.append(TMCRegionToEndpoint.getEndpointByRegionName(endpoint.region()));
+        url.append(api);
+        if (!params.isEmpty()) {
+            url.append("?");
+            url.append(params.entrySet().stream()
+                    .map(entry -> entry.getKey() + "=" + entry.getValue())
+                    .reduce("", (base, other) -> base + "&" + other));
+        }
+        // TODO: Sanitize?
+        return URI.create(url.toString());
+    }
+
 }

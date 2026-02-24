@@ -24,8 +24,7 @@ public enum TMCRegionToEndpoint {
             case "us_east" -> us_east.endpoint;
             case "us_west" -> us_west.endpoint;
             case "australia" -> australia.endpoint;
-            default ->
-                    throw new IllegalArgumentException(String.format("Region %s is not supported - please use one of these %s", region, Arrays.toString(TMCRegionToEndpoint.values())));
+            default -> null;
         };
     }
 

@@ -5,15 +5,13 @@ import io.camunda.connector.generator.java.annotation.TemplateProperty;
 public record TMCAuthentication(
         @TemplateProperty(group = "authentication", id = "authentication.authenticationType")
         String authenticationType,
-        @TemplateProperty(group = "authentication", id = "authentication.serviceAccountId")
+        @TemplateProperty(group = "authentication", id = "serviceAccountId")
         String serviceAccountId,
-        @TemplateProperty(group = "authentication", id = "authentication.accountSecret")
+        @TemplateProperty(group = "authentication", id = "accountSecret")
         String accountSecret,
-        @TemplateProperty(group = "authentication", id = "authentication.base64Credentials")
+        @TemplateProperty(group = "authentication", id = "base64")
         String base64Credentials,
-        @TemplateProperty(group = "authentication", id = "authentication.bearerToken")
-        String bearer
-        String bearerToken,
-        String authenticationType
+        @TemplateProperty(group = "authentication", id = "bearerToken")
+        String bearerToken
 ) {
 }
