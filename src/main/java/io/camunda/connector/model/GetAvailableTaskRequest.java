@@ -1,4 +1,4 @@
-package io.camunda.example.model;
+package io.camunda.connector.model;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

@@ -98,6 +98,20 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>3.1.0</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>3.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -134,7 +148,7 @@
         <configuration>
           <connectors>
             <connector>
-              <connectorClass>io.camunda.example.TMCTaskConnector</connectorClass>
+              <connectorClass>io.camunda.connector.TMCTaskConnector</connectorClass>
               <files>
                 <file>
                   <templateId>io.camunda.cimt.qlik-tmc-outbound-connector.v1</templateId>
@@ -144,6 +158,77 @@
             </connector>
           </connectors>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>7.20.0</version>
+        <executions>
+          <execution>
+            <id>orchestration</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.basedir}/src/main/resources/orchestration-tmc-swagger.json</inputSpec>
+              <generatorName>java</generatorName>
+
+              <!-- generate just API models -->
+              <generateApis>false</generateApis>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <generateModels>true</generateModels>
+              <generateModelTests>false</generateModelTests>
+              <generateApiTests>false</generateApiTests>
+
+              <modelPackage>io.camunda.connector.api.orchestration</modelPackage>
+
+              <configOptions>
+                <library>native</library>
+                <dateLibrary>java8</dateLibrary>
+                <serializationLibrary>jackson</serializationLibrary>
+                <useJakartaEe>true</useJakartaEe>
+                <generatedAnnotation>false</generatedAnnotation>
+                <openApiNullable>false</openApiNullable>
+              </configOptions>
+              <additionalProperties>
+                <useRecords>true</useRecords>
+              </additionalProperties>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>processing</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.basedir}/src/main/resources/processing-tmc-swagger.json</inputSpec>
+              <generatorName>java</generatorName>
+
+              <!-- generate just API models -->
+              <generateApis>false</generateApis>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <generateModels>true</generateModels>
+              <generateModelTests>false</generateModelTests>
+              <generateApiTests>false</generateApiTests>
+
+              <modelPackage>io.camunda.connector.api.processing</modelPackage>
+
+              <configOptions>
+                <library>native</library>
+                <dateLibrary>java8</dateLibrary>
+                <serializationLibrary>jackson</serializationLibrary>
+                <useJakartaEe>true</useJakartaEe>
+                <generatedAnnotation>false</generatedAnnotation>
+                <openApiNullable>false</openApiNullable>
+              </configOptions>
+              <additionalProperties>
+                <useRecords>true</useRecords>
+              </additionalProperties>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

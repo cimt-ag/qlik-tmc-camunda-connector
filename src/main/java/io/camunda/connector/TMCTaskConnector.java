@@ -1,14 +1,14 @@
-package io.camunda.example;
+package io.camunda.connector;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.camunda.connector.api.orchestration.PageTask;
 import io.camunda.connector.api.annotation.Operation;
 import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.annotation.Variable;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
-import io.camunda.example.model.GetAvailableTaskRequest;
-import io.camunda.example.model.TMCAuthentication;
-import io.camunda.example.model.TMCEndpoint;
-import io.camunda.example.model.TMCRegionToEndpoint;
+import io.camunda.connector.model.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -32,14 +32,14 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
 
     private static final String GET_TASKS_API = "/orchestration/executables/tasks";
 
+    private final ObjectMapper mapper = new ObjectMapper();
+
     @Operation(id = "getTasks", name = "get available tasks")
-    public Object getAvailableTasksRequest(@Variable GetAvailableTaskRequest request) {
+    public PageTask getAvailableTasksRequest(@Variable GetAvailableTaskRequest request) {
         LOGGER.info("Process: Get available tasks request");
 
         final String bearerToken = authenticate(request.authentication());
-
         final URI uri = createUri(request.endpoint(), request.payload().queryParameters(), GET_TASKS_API);
-
         final HttpRequest tmcRequest = HttpRequest.newBuilder()
                 .uri(uri)
                 .GET()
@@ -49,25 +49,37 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
                 .build();
 
         try {
-            return HttpClient.newBuilder()
+            HttpResponse<String> response = HttpClient.newBuilder()
                     .build()
-                    .send(tmcRequest, HttpResponse.BodyHandlers.ofString())
-                    .body();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            LOGGER.error("interrupted");
+                    .send(tmcRequest, HttpResponse.BodyHandlers.ofString());
+
+            LOGGER.info("Process: Get available tasks response");
+            validateResponse(response);
+
+            return mapper.readValue(response.body(), PageTask.class);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Error processing: Get available tasks response: {}", e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } catch (IOException | InterruptedException e) {
+            LOGGER.error("Error sending Request to TMC: {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
+    private void validateResponse(HttpResponse<String> response) {
+        if (response.statusCode() != 200 && response.statusCode() != 201) {
+            throw new IllegalArgumentException(String.format("TMC request exited with status Code %s: %s", response.statusCode(), response.body()));
+        }
+    }
+
     private String authenticate(@NotNull @Valid TMCAuthentication authentication) {
-        if (authentication.authenticationType() == null) {
+        TMCAuthenticationType type = TMCAuthenticationType.valueFrom(authentication.authenticationType());
+
+        if (type == null) {
             throw new IllegalArgumentException("Authentication type is required - please provide valid Credentials");
         }
 
-        if ("bearerToken".equals(authentication.authenticationType()) && authentication.bearerToken() != null) {
+        if (type == TMCAuthenticationType.BEARER_TOKEN && authentication.bearerToken() != null) {
             LOGGER.debug("Found Bearer Token in request - use bearer token for further authorization flow");
             return authentication.bearerToken();
         } else {
