@@ -252,8 +252,12 @@
           "value": "searchTasks"
         },
         {
-          "name": "GET Task Execution",
-          "value": "getTaskExecution"
+          "name": "GET Task Executions",
+          "value": "getTaskExecutions"
+        },
+        {
+          "name": "GET Tasks Executions",
+          "value": "getTasksExecutions"
         },
         {
           "name": "Get Task by ID",
@@ -276,6 +280,24 @@
         "type": "zeebe:taskHeader",
         "key": "operation"
       }
+    },
+    {
+      "id": "executionId",
+      "label": "execution ID",
+      "description": "Execution Id to query",
+      "optional": false,
+      "feel": "optional",
+      "group": "payload",
+      "condition": {
+        "property": "operation",
+        "equals": "getTaskExecutionStatus",
+        "type": "simple"
+      },
+      "binding": {
+        "name": "executionId",
+        "type": "zeebe:input"
+      },
+      "type": "String"
     },
     {
       "id": "payload.queryParameters",
