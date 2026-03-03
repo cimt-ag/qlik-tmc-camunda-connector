@@ -8,9 +8,7 @@ import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.api.processing.Executionidentifier;
 import io.camunda.connector.api.processing.JobExecutionStatusV21;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
-import io.camunda.connector.model.ExecuteTaskRequest;
-import io.camunda.connector.model.GetAvailableTaskRequest;
-import io.camunda.connector.model.GetTaskExecutionRequest;
+import io.camunda.connector.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +26,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TMCTaskConnector.class);
 
-    final TMCHttpClient client =  new TMCHttpClient();
+    private final TMCHttpClient client = new TMCHttpClient();
 
     @Operation(id = "getTasks", name = "get available tasks")
     public PageTask getAvailableTasksRequest(@Variable GetAvailableTaskRequest request) {
@@ -46,14 +44,29 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
     }
 
     @Operation(id = "executeTask", name = "Execute Task")
-    public Executionidentifier executeTask(@Variable ExecuteTaskRequest request) {
+    public JobExecutionStatusV21 executeTask(@Variable ExecuteTaskRequest request,
+                                             @Variable(name = "offset", value = "60") Integer offset,
+                                             @Variable(name = "period", value = "60") Integer period,
+                                             @Variable(name = "limit", value = "100") Integer limit) throws Exception {
         LOGGER.info("Process: execute task");
 
         final String bearerToken = client.tmcAuthenticate(request.authentication());
         final URI uri = TMCHttpClient.createUri(request.endpoint(), request.payload().queryParameters(), EXECUTE_TASK_API);
 
-        // TODO: await Execution Status
-        var result = client.sendTMCPostRequest(uri, request.payload().body(), bearerToken, Executionidentifier.class);
+        var executionidentifier = client.sendTMCPostRequest(uri, request.payload().body(), bearerToken, Executionidentifier.class);
+
+        final int offsetInMillis = offset * 1000;
+
+        var result = checkExecutionStatus(
+                new GetTaskExecutionRequest(
+                        request.authentication(),
+                        request.endpoint()
+                ),
+                executionidentifier.getExecutionId(),
+                offsetInMillis,
+                period,
+                limit
+        );
 
         LOGGER.info("Completed: execute task request");
         LOGGER.debug("Execute task request result: {}", result);
@@ -61,8 +74,66 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
         return result;
     }
 
+    private JobExecutionStatusV21 checkExecutionStatus(GetTaskExecutionRequest request,
+                                                       String executionId,
+                                                       Integer offsetInMillis,
+                                                       Integer period,
+                                                       Integer limit) throws Exception {
+        LOGGER.info("Process: check execution status");
+        try {
+            LOGGER.debug("Wait for {} seconds to check for task execution status", offsetInMillis);
+            Thread.sleep(offsetInMillis);
+        } catch (InterruptedException e) {
+            throw new TMCConnectorException(String.format("Error while awaiting offset: %s", e.getMessage()), e);
+        }
+
+        JobExecutionStatusV21 result;
+        int i = 0;
+
+        do {
+            i++;
+            LOGGER.debug("{} try checking status of the task execution", i);
+            result = getTaskExecutionStatus(request, executionId);
+            if (result != null && taskExecutionIsDone(result.getExecutionStatus())) {
+                break;
+            } else {
+                try {
+                    Thread.sleep(period);
+                } catch (InterruptedException e) {
+                    throw new TMCConnectorException(
+                            String.format("Error while awaiting finishing Task: %s", e.getMessage()), e);
+                }
+            }
+        } while (i <= limit);
+
+        if (i > limit) {
+            LOGGER.info("Retry Limits reached - detaching connector");
+            throw new TMCConnectorFailedTaskException("Retry Limits reached - detaching connector");
+        } else if (taskExecutionFailed(result.getExecutionStatus())) {
+            LOGGER.info("Failed Task with Status {}", result.getExecutionStatus().getValue());
+            throw new TMCConnectorFailedTaskException(
+                    String.format("Failed Task Execution - %s", result.getErrorMessage()));
+        } else {
+            LOGGER.info("Finished Task successful with Status {}", result.getExecutionStatus().getValue());
+        }
+
+        return result;
+    }
+
+    private boolean taskExecutionIsDone(JobExecutionStatusV21.ExecutionStatusEnum executionStatus) {
+        return switch (executionStatus) {
+            case EXECUTION_EVENT_RECEIVED, DISPATCHING_FLOW, STARTING_FLOW_EXECUTION, STOPPING_FLOW_EXECUTION -> false;
+            default -> true;
+        };
+    }
+
+    private boolean taskExecutionFailed(JobExecutionStatusV21.ExecutionStatusEnum executionStatus) {
+        return JobExecutionStatusV21.ExecutionStatusEnum.EXECUTION_SUCCESS != executionStatus;
+    }
+
     @Operation(id = "getTaskExecutionStatus", name = "Get Task Execution Status")
-    public JobExecutionStatusV21 getTaskExecutionStatus(@Variable GetTaskExecutionRequest request, @Variable(name = "executionId") String executionId) {
+    public JobExecutionStatusV21 getTaskExecutionStatus(@Variable GetTaskExecutionRequest request,
+                                                        @Variable(name = "executionId") String executionId) {
         LOGGER.info("Process: Get task execution status");
 
         final String bearerToken = client.tmcAuthenticate(request.authentication());

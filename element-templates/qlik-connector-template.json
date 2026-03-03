@@ -300,6 +300,63 @@
       "type": "String"
     },
     {
+      "id": "offset",
+      "label": "Offset in Seconds",
+      "description": "Offset to start the task execution monitoring",
+      "optional": true,
+      "value": "60",
+      "feel": "optional",
+      "group": "payload",
+      "condition": {
+        "property": "operation",
+        "equals": "executeTask",
+        "type": "simple"
+      },
+      "binding": {
+        "name": "offset",
+        "type": "zeebe:input"
+      },
+      "type": "Number"
+    },
+    {
+      "id": "period",
+      "label": "Period in Seconds",
+      "description": "Period to check the Status of the task execution",
+      "optional": true,
+      "value": "60",
+      "feel": "optional",
+      "group": "payload",
+      "condition": {
+        "property": "operation",
+        "equals": "executeTask",
+        "type": "simple"
+      },
+      "binding": {
+        "name": "period",
+        "type": "zeebe:input"
+      },
+      "type": "Number"
+    },
+    {
+      "id": "limit",
+      "label": "Limit to check Status",
+      "description": "How many attempts for checking the status of the task execution",
+      "optional": true,
+      "value": "100",
+      "feel": "optional",
+      "group": "payload",
+      "condition": {
+        "property": "operation",
+        "equals": "executeTask",
+        "type": "simple"
+      },
+      "binding": {
+        "name": "limit",
+        "type": "zeebe:input"
+      },
+      "type": "Number"
+    },
+    {
       "id": "payload.queryParameters",
       "label": "Query parameters",
       "description": "Map of query parameters to add to the request URL",

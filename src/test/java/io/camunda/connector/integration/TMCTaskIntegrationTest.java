@@ -83,7 +83,7 @@ public class TMCTaskIntegrationTest {
     }
 
     @Test
-    public void postExecuteTaskTest() {
+    public void postExecuteTaskTest() throws Exception {
         ExecuteTaskRequest request = new ExecuteTaskRequest(
                 authentication,
                 endpoint,
@@ -96,7 +96,7 @@ public class TMCTaskIntegrationTest {
                 ))
         );
 
-        var result = tmcTaskConnector.executeTask(request);
+        var result = tmcTaskConnector.executeTask(request, 0, 60, 100);
 
         assertNotNull(result);
     }
