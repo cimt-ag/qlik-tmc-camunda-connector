@@ -4,11 +4,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 public record TMCPayloadRequest(
-        @NotNull @Valid
+        @NotNull(message = "Please define authentication credentials") @Valid
         TMCAuthentication authentication,
-        @NotNull @Valid
+        @NotNull(message = "Please define the endpoint properties") @Valid
         TMCEndpoint endpoint,
-        @NotNull @Valid
+        @Valid
         TMCPayload payload
 ) {
 }

@@ -9,7 +9,10 @@ import io.camunda.connector.api.processing.Executionidentifier;
 import io.camunda.connector.api.processing.JobExecutionStatusV21;
 import io.camunda.connector.api.processing.PageTaskExecutionStatus;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
-import io.camunda.connector.model.*;
+import io.camunda.connector.model.TMCBasicRequest;
+import io.camunda.connector.model.TMCConnectorException;
+import io.camunda.connector.model.TMCConnectorFailedTaskException;
+import io.camunda.connector.model.TMCPayloadRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,7 +137,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
 
     @Operation(id = "getTaskExecutionStatus", name = "Get Task Execution Status")
     public JobExecutionStatusV21 getTaskExecutionStatus(@Variable TMCBasicRequest request,
-                                                        @Variable(name = "executionId") String executionId) {
+                                                        @Variable(name = "getTaskExecutionStatus_executionId") String executionId) {
         LOGGER.info("Process: Get task execution status");
 
         final String bearerToken = client.tmcAuthenticate(request.authentication());
@@ -171,6 +174,32 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
 
         LOGGER.info("Completed: Get available Tasks Executions");
         LOGGER.debug("Get available Tasks Executions: {}", result);
+
+        return result;
+    }
+
+    @Operation(id = "getTaskExecutions", name = "Get Task Executions")
+    public PageTaskExecutionStatus getTaskExecutions(@Variable TMCPayloadRequest request,
+                                                     @Variable(name = "getTaskExecutions_taskId") String taskId) {
+        LOGGER.info("Process: Get task execution");
+
+        final String bearerToken = client.tmcAuthenticate(request.authentication());
+
+
+        Map<String, Object> queryParams = Map.of();
+        if (request.payload() != null && request.payload().queryParameters() != null) {
+            queryParams = request.payload().queryParameters();
+        }
+
+        final URI uri = TMCHttpClient.createUri(
+                request.endpoint(),
+                queryParams,
+                TASK_EXECUTIONS_API.apply(taskId));
+
+        var result = client.sendTMCGetRequest(uri, bearerToken, PageTaskExecutionStatus.class);
+
+        LOGGER.info("Completed: get task execution request");
+        LOGGER.debug("Task execution result: {}", result);
 
         return result;
     }

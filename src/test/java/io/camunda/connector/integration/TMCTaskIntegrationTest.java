@@ -142,4 +142,20 @@ public class TMCTaskIntegrationTest {
         assertNotNull(result);
     }
 
+    @Test
+    public void getTasksExecutionsTest() {
+        TMCPayloadRequest request = new TMCPayloadRequest(
+                authentication,
+                endpoint,
+                new TMCPayload(
+                        Map.of(),
+                        Map.of()
+                )
+        );
+
+        var result = tmcTaskConnector.getTaskExecutions(request, TASK_ID);
+
+        assertNotNull(result);
+    }
+
 }

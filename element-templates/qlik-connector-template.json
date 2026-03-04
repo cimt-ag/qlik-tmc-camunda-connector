@@ -278,7 +278,7 @@
       }
     },
     {
-      "id": "executionId",
+      "id": "getTaskExecutionStatus:executionId",
       "label": "execution ID",
       "description": "Execution Id to query",
       "optional": false,
@@ -290,7 +290,25 @@
         "type": "simple"
       },
       "binding": {
-        "name": "executionId",
+        "name": "getTaskExecutionStatus_executionId",
+        "type": "zeebe:input"
+      },
+      "type": "String"
+    },
+    {
+      "id": "getTaskExecutions:taskId",
+      "label": "Task ID",
+      "description": "Task Id to query",
+      "optional": false,
+      "feel": "optional",
+      "group": "payload",
+      "condition": {
+        "property": "operation",
+        "equals": "getTaskExecutions",
+        "type": "simple"
+      },
+      "binding": {
+        "name": "getTaskExecutions_taskId",
         "type": "zeebe:input"
       },
       "type": "String"
