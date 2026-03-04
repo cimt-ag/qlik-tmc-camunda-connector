@@ -7,6 +7,7 @@ import io.camunda.connector.api.orchestration.PageTask;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.api.processing.Executionidentifier;
 import io.camunda.connector.api.processing.JobExecutionStatusV21;
+import io.camunda.connector.api.processing.PageTaskExecutionStatus;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
 import io.camunda.connector.model.*;
 import org.slf4j.Logger;
@@ -29,7 +30,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
     private final TMCHttpClient client = new TMCHttpClient();
 
     @Operation(id = "getTasks", name = "get available tasks")
-    public PageTask getAvailableTasksRequest(@Variable GetAvailableTaskRequest request) {
+    public PageTask getAvailableTasks(@Variable TMCPayloadRequest request) {
         LOGGER.info("Process: Get available tasks request");
 
         final String bearerToken = client.tmcAuthenticate(request.authentication());
@@ -44,7 +45,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
     }
 
     @Operation(id = "executeTask", name = "Execute Task")
-    public JobExecutionStatusV21 executeTask(@Variable ExecuteTaskRequest request,
+    public JobExecutionStatusV21 executeTask(@Variable TMCPayloadRequest request,
                                              @Variable(name = "offset", value = "60") Integer offset,
                                              @Variable(name = "period", value = "60") Integer period,
                                              @Variable(name = "limit", value = "100") Integer limit) throws Exception {
@@ -58,7 +59,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
         final int offsetInMillis = offset * 1000;
 
         var result = checkExecutionStatus(
-                new GetTaskExecutionRequest(
+                new TMCBasicRequest(
                         request.authentication(),
                         request.endpoint()
                 ),
@@ -74,7 +75,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
         return result;
     }
 
-    private JobExecutionStatusV21 checkExecutionStatus(GetTaskExecutionRequest request,
+    private JobExecutionStatusV21 checkExecutionStatus(TMCBasicRequest request,
                                                        String executionId,
                                                        Integer offsetInMillis,
                                                        Integer period,
@@ -132,7 +133,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
     }
 
     @Operation(id = "getTaskExecutionStatus", name = "Get Task Execution Status")
-    public JobExecutionStatusV21 getTaskExecutionStatus(@Variable GetTaskExecutionRequest request,
+    public JobExecutionStatusV21 getTaskExecutionStatus(@Variable TMCBasicRequest request,
                                                         @Variable(name = "executionId") String executionId) {
         LOGGER.info("Process: Get task execution status");
 
@@ -147,6 +148,29 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
 
         LOGGER.info("Completed: get task execution status request");
         LOGGER.debug("Task execution status result: {}", result);
+
+        return result;
+    }
+
+    @Operation(id = "getAvailableTasksExecutions", name = "Get available Tasks Executions")
+    public PageTaskExecutionStatus getAvailableTasksExecutions(@Variable TMCPayloadRequest request) {
+        LOGGER.info("Process: Get available Tasks Executions");
+
+        final String bearerToken = client.tmcAuthenticate(request.authentication());
+
+        final URI uri = TMCHttpClient.createUri(
+                request.endpoint(),
+                Map.of(),
+                AVAILABLE_TASKS_EXECUTIONS_API);
+
+        var result = client.sendTMCPostRequest(
+                uri,
+                request.payload().body(),
+                bearerToken,
+                PageTaskExecutionStatus.class);
+
+        LOGGER.info("Completed: Get available Tasks Executions");
+        LOGGER.debug("Get available Tasks Executions: {}", result);
 
         return result;
     }

@@ -27,6 +27,7 @@ public class TMCHttpClient {
     public static final String EXECUTE_TASK_API = "/processing/executions";
     public static final Function<String, String> EXECUTION_STATUS_API =
             (String executionId) -> String.format("/processing/executions/%s", executionId);
+    public static final String AVAILABLE_TASKS_EXECUTIONS_API = "/processing/executables/tasks/executions";
 
     private final ObjectMapper mapper;
 

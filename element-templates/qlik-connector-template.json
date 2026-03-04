@@ -248,16 +248,12 @@
           "value": "getTasks"
         },
         {
-          "name": "Search Tasks",
-          "value": "searchTasks"
-        },
-        {
-          "name": "GET Task Executions",
+          "name": "Get Task Executions",
           "value": "getTaskExecutions"
         },
         {
-          "name": "GET Tasks Executions",
-          "value": "getTasksExecutions"
+          "name": "Get available Tasks Executions",
+          "value": "getAvailableTasksExecutions"
         },
         {
           "name": "Get Task by ID",

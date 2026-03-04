@@ -1,6 +1,7 @@
 package io.camunda.connector.integration;
 
 import io.camunda.connector.TMCTaskConnector;
+import io.camunda.connector.api.processing.TaskExecutionsFilters;
 import io.camunda.connector.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,7 @@ public class TMCTaskIntegrationTest {
 
     private TMCAuthentication authentication;
     private TMCEndpoint endpoint;
+    private TMCBasicRequest basicRequest;
 
     private final TMCTaskConnector tmcTaskConnector = new TMCTaskConnector();
 
@@ -48,11 +50,16 @@ public class TMCTaskIntegrationTest {
                         PERSONAL_ACCESS_TOKEN);
 
         this.endpoint = new TMCEndpoint(TASK_IDENTIFIER, TMCRegionToEndpoint.Europe.getName());
+
+        this.basicRequest = new TMCBasicRequest(
+                authentication,
+                endpoint
+        );
     }
 
     @Test
     public void getTaskAPICallTest() {
-        GetAvailableTaskRequest request = new GetAvailableTaskRequest(
+        TMCPayloadRequest request = new TMCPayloadRequest(
                 authentication,
                 endpoint,
                 new TMCPayload(Map.of(
@@ -61,14 +68,14 @@ public class TMCTaskIntegrationTest {
                 ), Map.of())
         );
 
-        var result = tmcTaskConnector.getAvailableTasksRequest(request);
+        var result = tmcTaskConnector.getAvailableTasks(request);
 
         assertNotNull(result);
     }
 
     @Test
     public void getTaskAPICallWrongCredentialsTest() {
-        GetAvailableTaskRequest request = new GetAvailableTaskRequest(
+        TMCPayloadRequest request = new TMCPayloadRequest(
                 new TMCAuthentication(
                         null,
                         null,
@@ -79,12 +86,12 @@ public class TMCTaskIntegrationTest {
                 new TMCPayload(Map.of(), Map.of())
         );
 
-        assertThrows(RuntimeException.class, () -> tmcTaskConnector.getAvailableTasksRequest(request));
+        assertThrows(RuntimeException.class, () -> tmcTaskConnector.getAvailableTasks(request));
     }
 
     @Test
     public void postExecuteTaskTest() throws Exception {
-        ExecuteTaskRequest request = new ExecuteTaskRequest(
+        TMCPayloadRequest request = new TMCPayloadRequest(
                 authentication,
                 endpoint,
                 new TMCPayload(Map.of(), Map.of(
@@ -103,12 +110,7 @@ public class TMCTaskIntegrationTest {
 
     @Test
     public void getTaskExecutionStatus() {
-        GetTaskExecutionRequest request = new GetTaskExecutionRequest(
-                authentication,
-                endpoint
-        );
-
-        var result = tmcTaskConnector.getTaskExecutionStatus(request, EXECUTION_ID);
+        var result = tmcTaskConnector.getTaskExecutionStatus(basicRequest, EXECUTION_ID);
 
         assertNotNull(result);
     }
@@ -117,12 +119,27 @@ public class TMCTaskIntegrationTest {
     public void getErrorTaskExecutionStatus() {
         final String executionID = "wrong";
 
-        GetTaskExecutionRequest request = new GetTaskExecutionRequest(
+        assertThrows(TMCConnectionException.class, () -> tmcTaskConnector.getTaskExecutionStatus(basicRequest, executionID));
+    }
+
+    @Test
+    public void getAvailableTasksExecutions() {
+        TMCPayloadRequest request = new TMCPayloadRequest(
                 authentication,
-                endpoint
+                endpoint,
+                new TMCPayload(
+                        Map.of(),
+                        Map.of(
+                                "environmentId", TMC_ENV,
+                                "status", TaskExecutionsFilters.StatusEnum.EXECUTION_SUCCESSFUL.getValue(),
+                                "lastDays", 15
+                        )
+                )
         );
 
-        assertThrows(TMCConnectionException.class, () -> tmcTaskConnector.getTaskExecutionStatus(request, executionID));
+        var result = tmcTaskConnector.getAvailableTasksExecutions(request);
+
+        assertNotNull(result);
     }
 
 }
