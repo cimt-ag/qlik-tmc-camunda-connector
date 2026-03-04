@@ -314,6 +314,24 @@
       "type": "String"
     },
     {
+      "id": "terminateTaskExecution:executionId",
+      "label": "Execution ID to terminate the task execution",
+      "description": "Execution ID to terminate Execution",
+      "optional": false,
+      "feel": "optional",
+      "group": "payload",
+      "condition": {
+        "property": "operation",
+        "equals": "terminateTaskExecution",
+        "type": "simple"
+      },
+      "binding": {
+        "name": "terminateTaskExecution_executionId",
+        "type": "zeebe:input"
+      },
+      "type": "String"
+    },
+    {
       "id": "offset",
       "label": "Offset in Seconds",
       "description": "Offset to start the task execution monitoring",

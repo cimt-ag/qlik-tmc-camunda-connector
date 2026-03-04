@@ -30,6 +30,9 @@ public class TMCHttpClient {
             (String executionId) -> String.format("/processing/executions/%s", executionId);
     public static final Function<String, String> TASK_EXECUTIONS_API =
             (String taskId) -> String.format("/processing/executables/tasks/%s/executions", taskId);
+    public static final Function<String, String> TERMINATE_TASK_EXECUTION_API =
+            (String executionId) -> String.format("/processing/executions/%s", executionId);
+
 
     private final ObjectMapper mapper;
 
@@ -72,6 +75,18 @@ public class TMCHttpClient {
                 responseType);
     }
 
+    public void sendTMCDeleteRequest(URI uri, String bearerToken) {
+        sendTMCRequest(
+                HttpRequest.newBuilder()
+                        .uri(uri)
+                        .DELETE()
+                        .header("Content-Type", "application/json")
+                        .header("Accept", "application/json")
+                        .header("Authorization", "Bearer " + bearerToken)
+                        .build(),
+                Void.class);
+    }
+
     private <T> T sendTMCRequest(HttpRequest tmcRequest, Class<T> clazz) {
         final HttpResponse<String> response;
 
@@ -80,12 +95,17 @@ public class TMCHttpClient {
                     .build()
                     .send(tmcRequest, HttpResponse.BodyHandlers.ofString());
 
-            LOGGER.debug("Received Response - {}", clazz.getSimpleName());
+            LOGGER.debug("TMC Response: {}", response);
 
             validateResponse(response);
         } catch (IOException | InterruptedException e) {
             LOGGER.error("Error sending Request to TMC: {}", e.getMessage());
             throw new TMCConnectionException("Error sending Request to TMC", e);
+        }
+
+        if (clazz == Void.class) {
+            LOGGER.debug("No response Mapping because Void Datatype");
+            return null;
         }
 
         try {
@@ -101,7 +121,9 @@ public class TMCHttpClient {
     }
 
     private void validateResponse(HttpResponse<String> response) {
-        if (response.statusCode() != 200 && response.statusCode() != 201) {
+        final int responseCode = response.statusCode();
+
+        if (responseCode != 200 && responseCode != 201 && responseCode != 204) {
             throw new TMCConnectionException(String.format("TMC request exited with status Code %s: %s", response.statusCode(), response.body()));
         }
     }

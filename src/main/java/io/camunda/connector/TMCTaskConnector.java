@@ -204,4 +204,22 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
         return result;
     }
 
+    @Operation(id = "terminateTaskExecution", name = "Execution ID to terminate Execution")
+    public void terminateTaskExecution(@Variable TMCBasicRequest request,
+                                       @Variable(name = "terminateTaskExecution_executionId") String executionId) {
+        LOGGER.info("Process: Terminate Execution {}", executionId);
+        final String bearerToken = client.tmcAuthenticate(request.authentication());
+
+        final URI uri = TMCHttpClient.createUri(
+                request.endpoint(),
+                Map.of(),
+                AVAILABLE_TASKS_EXECUTIONS_API);
+
+        client.sendTMCDeleteRequest(
+                uri,
+                bearerToken);
+
+        LOGGER.info("Completed: Terminate Tasks Execution");
+    }
+
 }
