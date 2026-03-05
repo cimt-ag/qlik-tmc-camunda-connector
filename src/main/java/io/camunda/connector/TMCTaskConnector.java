@@ -7,6 +7,7 @@ import io.camunda.connector.api.annotation.Variable;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.error.ConnectorExceptionBuilder;
 import io.camunda.connector.api.orchestration.PageTask;
+import io.camunda.connector.api.orchestration.TaskV21;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.api.processing.JobExecutionStatusV21;
 import io.camunda.connector.api.processing.PageTaskExecutionStatus;
@@ -80,6 +81,16 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
         LOGGER.info("Get Task Executions request");
         return execute(new GetTaskExecutionsExecution()
                 .args(taskId, token)
+                .client(client)
+                .request(request));
+    }
+
+    @Operation(id = "getTaskById", name = "Get Task by ID")
+    public TaskV21 getTaskById(@Variable TMCBasicRequest request,
+                               @Variable(name = "getTaskById_taskId") String taskId) {
+        LOGGER.info("Get Task by id request");
+        return execute(new GetTaskByIdExecution()
+                .args(taskId)
                 .client(client)
                 .request(request));
     }

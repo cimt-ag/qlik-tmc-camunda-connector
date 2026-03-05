@@ -37,6 +37,8 @@ public class TMCHttpClient {
             (String taskId) -> String.format("/processing/executables/tasks/%s/executions", taskId);
     public static final Function<String, String> TERMINATE_TASK_EXECUTION_API =
             (String executionId) -> String.format("/processing/executions/%s", executionId);
+    public static final Function<String, String> GET_TASK_BY_ID_API =
+            (String taskId) -> String.format("/orchestration/executables/tasks/%s", taskId);
 
 
     private final ObjectMapper mapper;

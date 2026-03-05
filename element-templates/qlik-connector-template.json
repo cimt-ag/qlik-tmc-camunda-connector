@@ -318,6 +318,24 @@
       "type": "String"
     },
     {
+      "id": "getTaskById:taskId",
+      "label": "Task ID",
+      "description": "Task Id to get the task",
+      "optional": false,
+      "feel": "optional",
+      "group": "payload",
+      "condition": {
+        "property": "operation",
+        "equals": "getTaskById",
+        "type": "simple"
+      },
+      "binding": {
+        "name": "getTaskById_taskId",
+        "type": "zeebe:input"
+      },
+      "type": "String"
+    },
+    {
       "id": "terminateTaskExecution:executionId",
       "label": "Execution ID to terminate the task execution",
       "description": "Execution ID to terminate Execution",

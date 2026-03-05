@@ -1,6 +1,7 @@
 package io.camunda.connector.integration;
 
 import io.camunda.connector.TMCTaskConnector;
+import io.camunda.connector.api.orchestration.TaskV21;
 import io.camunda.connector.api.processing.TaskExecutionsFilters;
 import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.model.*;
@@ -11,8 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class TMCTaskIntegrationTest {
@@ -157,6 +157,14 @@ public class TMCTaskIntegrationTest {
         var result = tmcTaskConnector.getTaskExecutions(request, TASK_ID, null);
 
         assertNotNull(result);
+    }
+
+    @Test
+    public void getTaskByIdTest() {
+        TaskV21 result = tmcTaskConnector.getTaskById(basicRequest, TASK_ID);
+
+        assertNotNull(result);
+        assertEquals(TASK_NAME, result.getName());
     }
 
 }
