@@ -5,7 +5,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.camunda.connector.model.*;
+import io.camunda.connector.exception.TMCConnectionException;
+import io.camunda.connector.exception.TMCConnectorProcessingException;
+import io.camunda.connector.model.TMCAuthentication;
+import io.camunda.connector.model.TMCAuthenticationType;
+import io.camunda.connector.model.TMCEndpoint;
+import io.camunda.connector.model.TMCRegionToEndpoint;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -42,7 +47,7 @@ public class TMCHttpClient {
         this.mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    public <T> T sendTMCGetRequest(URI uri, String bearerToken, Class<T> responseType) {
+    public <T> T sendTMCGetRequest(URI uri, String bearerToken, Class<T> responseType) throws TMCConnectorProcessingException, TMCConnectionException {
         return sendTMCRequest(
                 HttpRequest.newBuilder()
                         .uri(uri)
@@ -54,14 +59,14 @@ public class TMCHttpClient {
                 responseType);
     }
 
-    public <T> T sendTMCPostRequest(URI uri, Map<String, Object> payload, String bearerToken, Class<T> responseType) {
+    public <T> T sendTMCPostRequest(URI uri, Map<String, Object> payload, String bearerToken, Class<T> responseType) throws TMCConnectorProcessingException, TMCConnectionException {
         String requestBody;
 
         try {
             requestBody = mapper.writeValueAsString(payload);
         } catch (JsonProcessingException e) {
             LOGGER.error("Error parsing body variables from connector input: {}", e.getMessage());
-            throw new TMCConnectorException(e.getMessage());
+            throw new TMCConnectorProcessingException(e.getMessage());
         }
 
         return sendTMCRequest(
@@ -75,7 +80,7 @@ public class TMCHttpClient {
                 responseType);
     }
 
-    public void sendTMCDeleteRequest(URI uri, String bearerToken) {
+    public void sendTMCDeleteRequest(URI uri, String bearerToken) throws TMCConnectionException, TMCConnectorProcessingException {
         sendTMCRequest(
                 HttpRequest.newBuilder()
                         .uri(uri)
@@ -87,7 +92,7 @@ public class TMCHttpClient {
                 Void.class);
     }
 
-    private <T> T sendTMCRequest(HttpRequest tmcRequest, Class<T> clazz) {
+    private <T> T sendTMCRequest(HttpRequest tmcRequest, Class<T> clazz) throws TMCConnectorProcessingException, TMCConnectionException {
         final HttpResponse<String> response;
 
         try {
@@ -113,14 +118,14 @@ public class TMCHttpClient {
             return mapper.readValue(response.body(), clazz);
         } catch (JsonMappingException e) {
             LOGGER.error("Error mapping TMC response: {}", e.getMessage());
-            throw new TMCConnectorException("Error parsing TMC response", e);
+            throw new TMCConnectorProcessingException("Error parsing TMC response", e);
         } catch (JsonProcessingException e) {
             LOGGER.error("Error processing TMC response: {}", e.getMessage());
-            throw new TMCConnectorException("Error parsing TMC response", e);
+            throw new TMCConnectorProcessingException("Error parsing TMC response", e);
         }
     }
 
-    private void validateResponse(HttpResponse<String> response) {
+    private void validateResponse(HttpResponse<String> response) throws TMCConnectionException {
         final int responseCode = response.statusCode();
 
         if (responseCode != 200 && responseCode != 201 && responseCode != 204) {
@@ -132,7 +137,7 @@ public class TMCHttpClient {
         TMCAuthenticationType type = TMCAuthenticationType.valueFrom(authentication.authenticationType());
 
         if (type == null) {
-            throw new TMCConnectorException("Authentication type is required - please provide valid Credentials");
+            throw new IllegalArgumentException("Authentication type is required - please provide valid Credentials");
         }
 
         if (type == TMCAuthenticationType.BEARER_TOKEN && authentication.bearerToken() != null) {
@@ -144,7 +149,6 @@ public class TMCHttpClient {
     }
 
     public static URI createUri(TMCEndpoint endpoint, Map<String, Object> params, String api) {
-
         StringBuilder url = new StringBuilder();
         url.append(TMCRegionToEndpoint.getEndpointByRegionName(endpoint.region()));
         url.append(api);

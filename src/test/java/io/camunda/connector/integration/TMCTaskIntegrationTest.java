@@ -2,6 +2,7 @@ package io.camunda.connector.integration;
 
 import io.camunda.connector.TMCTaskConnector;
 import io.camunda.connector.api.processing.TaskExecutionsFilters;
+import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

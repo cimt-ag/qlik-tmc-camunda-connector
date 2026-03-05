@@ -1,8 +1,9 @@
-package io.camunda.connector.model;
+package io.camunda.connector.exception;
 
-public class TMCConnectionException extends RuntimeException {
+public class TMCConnectionException extends TMCConnectorException {
 
     public TMCConnectionException() {
+        super();
     }
 
     public TMCConnectionException(String message) {

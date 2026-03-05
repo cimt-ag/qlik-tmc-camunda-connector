@@ -1,6 +1,6 @@
-package io.camunda.connector.model;
+package io.camunda.connector.exception;
 
-public class TMCConnectorFailedTaskException extends Exception {
+public class TMCConnectorFailedTaskException extends TMCConnectorException {
     public TMCConnectorFailedTaskException(String message) {
         super(message);
     }

@@ -10,4 +10,7 @@ public record TMCPayload(
         @TemplateProperty(group = "payload", id = "payload.body")
         Map<String, Object> body
 ) {
+        public static TMCPayload emptyPayload() {
+                return new TMCPayload(Map.of(), Map.of());
+        }
 }

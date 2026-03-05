@@ -11,4 +11,10 @@ public record TMCPayloadRequest(
         @Valid
         TMCPayload payload
 ) {
+    public TMCBasicRequest createBasicRequest() {
+        return new TMCBasicRequest(
+                authentication,
+                endpoint
+        );
+    }
 }
