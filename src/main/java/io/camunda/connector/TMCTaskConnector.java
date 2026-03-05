@@ -1,23 +1,25 @@
 package io.camunda.connector;
 
+import io.camunda.connector.api.annotation.Header;
 import io.camunda.connector.api.annotation.Operation;
 import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.annotation.Variable;
+import io.camunda.connector.api.error.ConnectorException;
+import io.camunda.connector.api.error.ConnectorExceptionBuilder;
 import io.camunda.connector.api.orchestration.PageTask;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.api.processing.Executionidentifier;
 import io.camunda.connector.api.processing.JobExecutionStatusV21;
 import io.camunda.connector.api.processing.PageTaskExecutionStatus;
+import io.camunda.connector.api.processing.TaskExecutionStatus;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
-import io.camunda.connector.model.TMCBasicRequest;
-import io.camunda.connector.model.TMCConnectorException;
-import io.camunda.connector.model.TMCConnectorFailedTaskException;
-import io.camunda.connector.model.TMCPayloadRequest;
+import io.camunda.connector.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 
 import static io.camunda.connector.TMCHttpClient.*;
 
@@ -31,6 +33,8 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(TMCTaskConnector.class);
 
     private final TMCHttpClient client = new TMCHttpClient();
+
+    private final String ERROR_TASK_EXECUTION_FAILED = "TASK_EXECUTION_FAILED";
 
     @Operation(id = "getTasks", name = "get available tasks")
     public PageTask getAvailableTasks(@Variable TMCPayloadRequest request) {
@@ -51,24 +55,51 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
     public JobExecutionStatusV21 executeTask(@Variable TMCPayloadRequest request,
                                              @Variable(name = "offset", value = "60") Integer offset,
                                              @Variable(name = "period", value = "60") Integer period,
-                                             @Variable(name = "limit", value = "100") Integer limit) throws Exception {
+                                             @Variable(name = "limit", value = "100") Integer limit
+                                             ) throws Exception {
         LOGGER.info("Process: execute task");
 
         final String bearerToken = client.tmcAuthenticate(request.authentication());
-        final URI uri = TMCHttpClient.createUri(request.endpoint(), request.payload().queryParameters(), EXECUTE_TASK_API);
+        final URI uri = TMCHttpClient.createUri(
+                request.endpoint(),
+                request.payload().queryParameters(),
+                EXECUTE_TASK_API);
 
-        var executionidentifier = client.sendTMCPostRequest(uri, request.payload().body(), bearerToken, Executionidentifier.class);
+        var currentTaskExecution = getCurrentExecution(
+                request.authentication(),
+                request.endpoint(),
+                bearerToken,
+                String.valueOf(request.payload().body().get("executable")));
+
+        String executionId;
+
+        // if there is a current execution it is likely this execution is a connector retry
+        // therefor we want to monitor this execution
+        if (currentTaskExecution.isPresent()) {
+            executionId = currentTaskExecution.get().getExecutionId();
+        } else {
+            var executionidentifier = client.sendTMCPostRequest(
+                    uri,
+                    request.payload().body(),
+                    bearerToken,
+                    Executionidentifier.class);
+            if (executionidentifier == null) {
+                throw new TMCConnectionException("Empty Execution Identifier after task execution");
+            }
+            executionId = executionidentifier.getExecutionId();
+        }
 
         final int offsetInMillis = offset * 1000;
+        final int periodInMillis = period * 1000;
 
         var result = checkExecutionStatus(
                 new TMCBasicRequest(
                         request.authentication(),
                         request.endpoint()
                 ),
-                executionidentifier.getExecutionId(),
+                executionId,
                 offsetInMillis,
-                period,
+                periodInMillis,
                 limit
         );
 
@@ -78,11 +109,33 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
         return result;
     }
 
+    private Optional<TaskExecutionStatus> getCurrentExecution(
+            final TMCAuthentication authentication,
+            final TMCEndpoint endpoint,
+            final String authToken,
+            final String taskId) {
+        if (taskId == null || taskId.isEmpty()) {
+            LOGGER.debug("No task id provided");
+            throw new TMCConnectorException("Missing taskId - Please provide a task ID to execute the task");
+        }
+
+        var lastExecutions = getTaskExecutions(
+                new TMCPayloadRequest(
+                        authentication,
+                        endpoint,
+                        new TMCPayload(Map.of(),Map.of())),
+                taskId,
+                authToken);
+        return lastExecutions.getItems().stream()
+                .filter(item -> item.getStatus() == TaskExecutionStatus.StatusEnum.EXECUTING)
+                .findFirst();
+    }
+
     private JobExecutionStatusV21 checkExecutionStatus(TMCBasicRequest request,
                                                        String executionId,
                                                        Integer offsetInMillis,
-                                                       Integer period,
-                                                       Integer limit) throws Exception {
+                                                       Integer periodInMillis,
+                                                       Integer limit) {
         LOGGER.info("Process: check execution status");
         try {
             LOGGER.debug("Wait for {} seconds to check for task execution status", offsetInMillis);
@@ -98,11 +151,11 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
             i++;
             LOGGER.debug("{} try checking status of the task execution", i);
             result = getTaskExecutionStatus(request, executionId);
-            if (result != null && taskExecutionIsDone(result.getExecutionStatus())) {
+            if (result != null && isTaskExecutionDone(result.getExecutionStatus())) {
                 break;
             } else {
                 try {
-                    Thread.sleep(period);
+                    Thread.sleep(periodInMillis);
                 } catch (InterruptedException e) {
                     throw new TMCConnectorException(
                             String.format("Error while awaiting finishing Task: %s", e.getMessage()), e);
@@ -110,12 +163,15 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
             }
         } while (i <= limit);
 
-        if (i > limit) {
+        if (limit < i) {
             LOGGER.info("Retry Limits reached - detaching connector");
-            throw new TMCConnectorFailedTaskException("Retry Limits reached - detaching connector");
+            throw new ConnectorExceptionBuilder()
+                    .message("TMC Retry Limits reached - detaching connector")
+                    .errorCode(ERROR_TASK_EXECUTION_FAILED)
+                    .build();
         } else if (taskExecutionFailed(result.getExecutionStatus())) {
             LOGGER.info("Failed Task with Status {}", result.getExecutionStatus().getValue());
-            throw new TMCConnectorFailedTaskException(
+            throw new ConnectorException(ERROR_TASK_EXECUTION_FAILED,
                     String.format("Failed Task Execution - %s", result.getErrorMessage()));
         } else {
             LOGGER.info("Finished Task successful with Status {}", result.getExecutionStatus().getValue());
@@ -124,7 +180,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
         return result;
     }
 
-    private boolean taskExecutionIsDone(JobExecutionStatusV21.ExecutionStatusEnum executionStatus) {
+    private boolean isTaskExecutionDone(JobExecutionStatusV21.ExecutionStatusEnum executionStatus) {
         return switch (executionStatus) {
             case EXECUTION_EVENT_RECEIVED, DISPATCHING_FLOW, STARTING_FLOW_EXECUTION, STOPPING_FLOW_EXECUTION -> false;
             default -> true;
@@ -180,10 +236,12 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
 
     @Operation(id = "getTaskExecutions", name = "Get Task Executions")
     public PageTaskExecutionStatus getTaskExecutions(@Variable TMCPayloadRequest request,
-                                                     @Variable(name = "getTaskExecutions_taskId") String taskId) {
+                                                     @Variable(name = "getTaskExecutions_taskId") String taskId,
+                                                     @Header(name = "bearerToken", required = false) String token) {
         LOGGER.info("Process: Get task execution");
 
-        final String bearerToken = client.tmcAuthenticate(request.authentication());
+        final String bearerToken = token != null && !token.isEmpty() ?
+                token : client.tmcAuthenticate(request.authentication());
 
 
         Map<String, Object> queryParams = Map.of();
