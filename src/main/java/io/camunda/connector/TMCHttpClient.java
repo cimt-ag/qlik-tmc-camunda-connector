@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.exception.TMCConnectorProcessingException;
+import io.camunda.connector.exception.TMCErrorResponseException;
 import io.camunda.connector.model.TMCAuthentication;
 import io.camunda.connector.model.TMCAuthenticationType;
 import io.camunda.connector.model.TMCEndpoint;
@@ -40,7 +41,6 @@ public class TMCHttpClient {
     public static final Function<String, String> GET_TASK_BY_ID_API =
             (String taskId) -> String.format("/orchestration/executables/tasks/%s", taskId);
 
-
     private final ObjectMapper mapper;
 
     public TMCHttpClient() {
@@ -49,7 +49,8 @@ public class TMCHttpClient {
         this.mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    public <T> T sendTMCGetRequest(URI uri, String bearerToken, Class<T> responseType) throws TMCConnectorProcessingException, TMCConnectionException {
+    public <T> T sendTMCGetRequest(URI uri, String bearerToken, Class<T> responseType)
+            throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
         return sendTMCRequest(
                 HttpRequest.newBuilder()
                         .uri(uri)
@@ -61,7 +62,8 @@ public class TMCHttpClient {
                 responseType);
     }
 
-    public <T> T sendTMCPostRequest(URI uri, Map<String, Object> payload, String bearerToken, Class<T> responseType) throws TMCConnectorProcessingException, TMCConnectionException {
+    public <T> T sendTMCPostRequest(URI uri, Map<String, Object> payload, String bearerToken, Class<T> responseType)
+            throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
         String requestBody;
 
         try {
@@ -82,7 +84,8 @@ public class TMCHttpClient {
                 responseType);
     }
 
-    public void sendTMCDeleteRequest(URI uri, String bearerToken) throws TMCConnectionException, TMCConnectorProcessingException {
+    public void sendTMCDeleteRequest(URI uri, String bearerToken)
+            throws TMCConnectionException, TMCConnectorProcessingException, TMCErrorResponseException {
         sendTMCRequest(
                 HttpRequest.newBuilder()
                         .uri(uri)
@@ -94,7 +97,8 @@ public class TMCHttpClient {
                 Void.class);
     }
 
-    private <T> T sendTMCRequest(HttpRequest tmcRequest, Class<T> clazz) throws TMCConnectorProcessingException, TMCConnectionException {
+    private <T> T sendTMCRequest(HttpRequest tmcRequest, Class<T> clazz)
+            throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
         final HttpResponse<String> response;
 
         try {
@@ -127,11 +131,11 @@ public class TMCHttpClient {
         }
     }
 
-    private void validateResponse(HttpResponse<String> response) throws TMCConnectionException {
+    private void validateResponse(HttpResponse<String> response) throws TMCErrorResponseException {
         final int responseCode = response.statusCode();
 
         if (responseCode != 200 && responseCode != 201 && responseCode != 204) {
-            throw new TMCConnectionException(String.format("TMC request exited with status Code %s: %s", response.statusCode(), response.body()));
+            throw new TMCErrorResponseException(String.format("TMC request exited with status Code %s: %s", response.statusCode(), response.body()));
         }
     }
 
@@ -139,14 +143,14 @@ public class TMCHttpClient {
         TMCAuthenticationType type = TMCAuthenticationType.valueFrom(authentication.authenticationType());
 
         if (type == null) {
-            throw new IllegalArgumentException("Authentication type is required - please provide valid Credentials");
+            throw new IllegalArgumentException("Authentication type is required - please provide valid credentials");
         }
 
         if (type == TMCAuthenticationType.BEARER_TOKEN && authentication.bearerToken() != null) {
             LOGGER.debug("Found Bearer Token in request - use bearer token for further authorization flow");
             return authentication.bearerToken();
         } else {
-            throw new UnsupportedOperationException("Other Authorizations than bearerToken Authorization are not supported yet");
+            throw new UnsupportedOperationException("Other authorizations than the bearerToken authorization are not supported yet");
         }
     }
 

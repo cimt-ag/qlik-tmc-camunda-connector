@@ -11,12 +11,11 @@ import io.camunda.connector.api.orchestration.TaskV21;
 import io.camunda.connector.api.outbound.OutboundConnectorProvider;
 import io.camunda.connector.api.processing.JobExecutionStatusV21;
 import io.camunda.connector.api.processing.PageTaskExecutionStatus;
-import io.camunda.connector.exception.TMCConnectionException;
-import io.camunda.connector.exception.TMCConnectorException;
-import io.camunda.connector.exception.TMCConnectorFailedTaskException;
+import io.camunda.connector.exception.*;
 import io.camunda.connector.execution.*;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
-import io.camunda.connector.model.*;
+import io.camunda.connector.model.TMCBasicRequest;
+import io.camunda.connector.model.TMCPayloadRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +94,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
                 .request(request));
     }
 
-    @Operation(id = "terminateTaskExecution", name = "Execution ID to terminate Execution")
+    @Operation(id = "terminateTaskExecution", name = "Terminate Task Execution")
     public void terminateTaskExecution(@Variable TMCBasicRequest request,
                                        @Variable(name = "terminateTaskExecution_executionId") String executionId) {
         LOGGER.info("Terminate Task Execution request");
@@ -106,18 +105,24 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
     }
 
     private <T> T execute(AbstractConnectorExecution<T, ?> execution) throws ConnectorException {
-        final String ERROR_TASK_EXECUTION_FAILED = "TASK_EXECUTION_FAILED";
-        final String ERROR_TMC_CONNECTION_FAILED = "TMC_CONNECTION_FAILED";
-        final String ERROR_TMC_PROCESSING_ERROR = "TMC_CONNECTOR_PROCESSING_ERROR";
+        final String taskExecutionFailed = "TASK_EXECUTION_FAILED";
+        final String tmcConnectionFailed = "TMC_CONNECTION_FAILED";
+        final String tmcErrorResponse = "TMC_REPONSE_ERROR";
+        final String tmcConnectorProcessingError = "TMC_CONNECTOR_PROCESSING_ERROR";
+        final String tmcTechnicalError = "TMC_TECHNICAL_ERROR";
 
         try {
             return execution.execute();
         } catch (TMCConnectorFailedTaskException e) {
-            throw buildException(e, ERROR_TASK_EXECUTION_FAILED);
+            throw buildException(e, taskExecutionFailed);
         } catch (TMCConnectionException e) {
-            throw buildException(e, ERROR_TMC_CONNECTION_FAILED);
-        } catch (TMCConnectorException e) {
-            throw buildException(e, ERROR_TMC_PROCESSING_ERROR);
+            throw buildException(e, tmcConnectionFailed);
+        } catch (TMCErrorResponseException e) {
+            throw buildException(e, tmcErrorResponse);
+        } catch (TMCConnectorProcessingException e) {
+            throw buildException(e, tmcConnectorProcessingError);
+        } catch (TMCConnectorException | RuntimeException e) {
+            throw buildException(e, tmcTechnicalError);
         }
     }
 

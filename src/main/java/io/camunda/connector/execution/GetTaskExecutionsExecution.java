@@ -2,8 +2,7 @@ package io.camunda.connector.execution;
 
 import io.camunda.connector.TMCHttpClient;
 import io.camunda.connector.api.processing.PageTaskExecutionStatus;
-import io.camunda.connector.exception.TMCConnectionException;
-import io.camunda.connector.exception.TMCConnectorProcessingException;
+import io.camunda.connector.exception.TMCConnectorException;
 import io.camunda.connector.model.TMCPayloadRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +26,7 @@ public class GetTaskExecutionsExecution extends AbstractConnectorExecution<PageT
     }
 
     @Override
-    public PageTaskExecutionStatus execute() throws TMCConnectionException, TMCConnectorProcessingException {
+    public PageTaskExecutionStatus execute() throws TMCConnectorException {
         LOGGER.info("Process: Get task execution");
 
         final String bearerToken = token != null && !token.isEmpty() ?

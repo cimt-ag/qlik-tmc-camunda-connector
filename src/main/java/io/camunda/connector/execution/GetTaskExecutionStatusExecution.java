@@ -2,8 +2,7 @@ package io.camunda.connector.execution;
 
 import io.camunda.connector.TMCHttpClient;
 import io.camunda.connector.api.processing.JobExecutionStatusV21;
-import io.camunda.connector.exception.TMCConnectionException;
-import io.camunda.connector.exception.TMCConnectorProcessingException;
+import io.camunda.connector.exception.TMCConnectorException;
 import io.camunda.connector.model.TMCBasicRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ public class GetTaskExecutionStatusExecution extends AbstractConnectorExecution<
     }
 
     @Override
-    public JobExecutionStatusV21 execute() throws TMCConnectionException, TMCConnectorProcessingException {
+    public JobExecutionStatusV21 execute() throws TMCConnectorException {
         LOGGER.info("Process: Get task execution status");
 
         final String bearerToken = client.tmcAuthenticate(request.authentication());
