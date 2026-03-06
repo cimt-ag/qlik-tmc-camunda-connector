@@ -44,10 +44,20 @@ public class TMCHttpClient {
     private final ObjectMapper mapper;
     private String authToken;
 
+    private final HttpClient client;
+
     public TMCHttpClient() {
         this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule());
         this.mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        this.client = HttpClient.newBuilder().build();
+    }
+
+    public TMCHttpClient(HttpClient client) {
+        this.mapper = new ObjectMapper();
+        this.mapper.registerModule(new JavaTimeModule());
+        this.mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        this.client = client;
     }
 
     /**
@@ -146,9 +156,7 @@ public class TMCHttpClient {
         final HttpResponse<String> response;
 
         try {
-            response = HttpClient.newBuilder()
-                    .build()
-                    .send(tmcRequest, HttpResponse.BodyHandlers.ofString());
+            response = client.send(tmcRequest, HttpResponse.BodyHandlers.ofString());
 
             LOGGER.debug("TMC Response: {}", response);
 

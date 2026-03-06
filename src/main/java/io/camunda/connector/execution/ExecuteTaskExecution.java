@@ -24,6 +24,8 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecuteTaskExecution.class);
 
+    public static final String EXECUTABLE_KEY = "executable";
+
     private Integer period;
     private Integer offset;
     private Integer limit;
@@ -48,7 +50,7 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
         var currentTaskExecution = getCurrentExecution(
                 request.authentication(),
                 request.endpoint(),
-                String.valueOf(request.payload().body().get("executable")));
+                String.valueOf(request.payload().body().get(EXECUTABLE_KEY)));
 
         String executionId;
 
@@ -141,12 +143,6 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
 
             if (result != null && isTaskExecutionDone(result.getExecutionStatus())) {
                 break;
-            } else if (result != null && !canExecutionContinue(result.getExecutionStatus())) {
-                LOGGER.info("Execution exceeded unexpectedly");
-                throw new TMCConnectorFailedTaskException(
-                        String.format("Execution exceeded unexpectedly with status %s: %s",
-                                result.getExecutionStatus(),
-                                result.getErrorMessage()));
             } else {
                 try {
                     Thread.sleep(periodInMillis);

@@ -1,10 +1,13 @@
 package io.camunda.connector.integration;
 
+import io.camunda.connector.AbstractTMCConnectorTest;
 import io.camunda.connector.TMCTaskConnector;
 import io.camunda.connector.api.orchestration.TaskV21;
 import io.camunda.connector.api.processing.TaskExecutionsFilters;
 import io.camunda.connector.exception.TMCConnectionException;
-import io.camunda.connector.model.*;
+import io.camunda.connector.model.TMCAuthentication;
+import io.camunda.connector.model.TMCPayload;
+import io.camunda.connector.model.TMCPayloadRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,9 +18,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class TMCTaskIntegrationTest {
-
-    private static final String TASK_IDENTIFIER = "task";
+public class TMCTaskIntegrationTest extends AbstractTMCConnectorTest {
 
     @Value("${tmc.access-token}")
     private String PERSONAL_ACCESS_TOKEN;
@@ -34,28 +35,11 @@ public class TMCTaskIntegrationTest {
     @Value("${tmc.task.execution-id}")
     private String EXECUTION_ID;
 
-    private TMCAuthentication authentication;
-    private TMCEndpoint endpoint;
-    private TMCBasicRequest basicRequest;
-
     private final TMCTaskConnector tmcTaskConnector = new TMCTaskConnector();
 
     @BeforeEach
     public void setup() {
-        this.authentication =
-                new TMCAuthentication(
-                        TMCAuthenticationType.BEARER_TOKEN.getValue(),
-                        null,
-                        null,
-                        null,
-                        PERSONAL_ACCESS_TOKEN);
-
-        this.endpoint = new TMCEndpoint(TASK_IDENTIFIER, TMCRegionToEndpoint.Europe.getName());
-
-        this.basicRequest = new TMCBasicRequest(
-                authentication,
-                endpoint
-        );
+        setupRequestModels(PERSONAL_ACCESS_TOKEN);
     }
 
     @Test
