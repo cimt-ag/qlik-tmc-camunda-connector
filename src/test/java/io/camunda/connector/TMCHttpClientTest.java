@@ -6,6 +6,7 @@ import io.camunda.connector.exception.TMCErrorResponseException;
 import io.camunda.connector.model.TMCAuthentication;
 import io.camunda.connector.model.TMCAuthenticationType;
 import io.camunda.connector.model.TMCEndpoint;
+import io.camunda.connector.model.TMCRegionToEndpoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,20 +19,22 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TMCHttpClientTest {
 
     private TMCHttpClient client;
     private HttpClient httpClient;
     private HttpResponse<String> httpResponse;
+    private TMCEndpoint endpoint = new TMCEndpoint("Task", "europe");
 
     static class DummyResponse {
         public String value;
     }
 
     @BeforeEach
-    void setup() {
+    public void setup() {
         httpClient = mock(HttpClient.class);
         httpResponse = mock(HttpResponse.class);
         client = new TMCHttpClient(httpClient);
@@ -48,7 +51,7 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    void sendTMCGetRequest_success() throws Exception {
+    public void sendTMCGetRequest_success() throws Exception {
 
         authenticate();
 
@@ -70,7 +73,7 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    void sendTMCPostRequest_success() throws Exception {
+    public void sendTMCPostRequest_success() throws Exception {
 
         authenticate();
 
@@ -95,7 +98,7 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    void sendTMCDeleteRequest_success() throws Exception {
+    public void sendTMCDeleteRequest_success() throws Exception {
 
         authenticate();
 
@@ -110,7 +113,7 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    void sendTMCRequest_errorResponse() throws Exception {
+    public void sendTMCRequest_errorResponse() throws Exception {
 
         authenticate();
 
@@ -126,8 +129,9 @@ public class TMCHttpClientTest {
         );
     }
 
+
     @Test
-    void sendTMCRequest_connectionError() throws Exception {
+    public void sendTMCRequest_connectionError() throws Exception {
 
         authenticate();
 
@@ -141,7 +145,7 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    void tmcAuthenticate_bearerToken() {
+    public void tmcAuthenticate_bearerToken() {
 
         TMCAuthentication auth =
                 new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
@@ -156,7 +160,7 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    void tmcAuthenticate_reuseToken() {
+    public void tmcAuthenticate_reuseToken() {
 
         TMCAuthentication auth =
                 new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
@@ -173,7 +177,7 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    void reauthenticate_shouldResetToken() {
+    public void reauthenticate_shouldResetToken() {
 
         TMCAuthentication auth =
                 new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
@@ -194,7 +198,7 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    void invalidateAuthToken_shouldClearToken() {
+    public void invalidateAuthToken_shouldClearToken() {
 
         TMCAuthentication auth =
                 new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
@@ -213,10 +217,10 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    void createUri_shouldBuildCorrectUri() {
+    public void createUri_shouldBuildCorrectUri() {
 
         URI uri = TMCHttpClient.createUri(
-                new TMCEndpoint("Task", "europe"),
+                endpoint,
                 Map.of("limit", 10, "offset", 5),
                 TMCHttpClient.GET_TASKS_API
         );
@@ -224,6 +228,14 @@ public class TMCHttpClientTest {
         assertTrue(uri.toString().contains("limit=10"));
         assertTrue(uri.toString().contains("offset=5"));
         assertTrue(uri.toString().contains(TMCHttpClient.GET_TASKS_API));
+    }
+
+    @Test
+    public void testUnsanitizedQueryParameters() {
+        Map<String, Object> queryParameter = Map.of("un sanitized", true);
+
+        var result = TMCHttpClient.createUri(endpoint, queryParameter, "/path");
+        assertEquals(TMCRegionToEndpoint.Europe.getEndpoint()+"/path?un+sanitized=true", result.toString());
     }
 
 }

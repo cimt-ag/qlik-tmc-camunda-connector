@@ -19,9 +19,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -255,10 +257,12 @@ public class TMCHttpClient {
             url.append("?");
             url.append(params.entrySet().stream()
                     .filter(entry -> Objects.nonNull(entry.getValue()))
-                    .map(entry -> entry.getKey() + "=" + entry.getValue())
-                    .reduce("", (base, other) -> base + "&" + other));
+                    .map(entry ->
+                            URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) +
+                                    "=" +
+                                    URLEncoder.encode(String.valueOf(entry.getValue()), StandardCharsets.UTF_8))
+                    .reduce((base, other) -> base + "&" + other).orElse(""));
         }
-        // TODO: Sanitize?
         return URI.create(url.toString());
     }
 }
