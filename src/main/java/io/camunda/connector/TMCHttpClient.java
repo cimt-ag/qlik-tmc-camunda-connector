@@ -49,6 +49,21 @@ public class TMCHttpClient {
         this.mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
+    /**
+     * Sends a GET Request to the TMC.
+     * This method expects to receive a valid barerToken to authenticate the request with. Use the
+     * {@link #tmcAuthenticate(TMCAuthentication)} method to authenticate at the tmc and receive a valid bearerToken.
+     * This method expects an uri for the request. You can use {@link #createUri(TMCEndpoint, Map, String)} to create the uri.
+     *
+     * @param uri          Path to use for the request
+     * @param bearerToken  to authenticate at the tmc - can be a personal access token or jwt from the auth endpoint
+     * @param responseType class definition of the return type
+     * @param <T>          class of the return type
+     * @return the response of the GET request mapped to the {@param responseType}
+     * @throws TMCConnectorProcessingException if an error occurs handling the response
+     * @throws TMCConnectionException          if an error occurs while sending the GET request
+     * @throws TMCErrorResponseException       if the tmc answers with an error HTTP status code
+     */
     public <T> T sendTMCGetRequest(URI uri, String bearerToken, Class<T> responseType)
             throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
         return sendTMCRequest(
@@ -62,6 +77,22 @@ public class TMCHttpClient {
                 responseType);
     }
 
+    /**
+     * Sends a POST Request to the TMC.
+     * This method expects to receive a valid barerToken to authenticate the request with. Use the
+     * {@link #tmcAuthenticate(TMCAuthentication)} method to authenticate at the tmc and receive a valid bearerToken.
+     * This method expects an uri for the request. You can use {@link #createUri(TMCEndpoint, Map, String)} to create the uri.
+     *
+     * @param uri          Path to use for the request
+     * @param payload      body of the POST request
+     * @param bearerToken  to authenticate at the tmc - can be a personal access token or jwt from the auth endpoint
+     * @param responseType class definition of the return type
+     * @param <T>          class of the return type
+     * @return the response of the POST request mapped to the {@param responseType}
+     * @throws TMCConnectorProcessingException if an error occurs handling the response
+     * @throws TMCConnectionException          if an error occurs while sending the POST request
+     * @throws TMCErrorResponseException       if the tmc answers with an error HTTP status code
+     */
     public <T> T sendTMCPostRequest(URI uri, Map<String, Object> payload, String bearerToken, Class<T> responseType)
             throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
         String requestBody;
@@ -84,6 +115,18 @@ public class TMCHttpClient {
                 responseType);
     }
 
+    /**
+     * Sends a DELETE Request to the TMC.
+     * This method expects to receive a valid barerToken to authenticate the request with. Use the
+     * {@link #tmcAuthenticate(TMCAuthentication)} method to authenticate at the tmc and receive a valid bearerToken.
+     * This method expects an uri for the request. You can use {@link #createUri(TMCEndpoint, Map, String)} to create the uri.
+     *
+     * @param uri         Path to use for the request
+     * @param bearerToken to authenticate at the tmc - can be a personal access token or jwt from the auth endpoint
+     * @throws TMCConnectorProcessingException if an error occurs handling the response
+     * @throws TMCConnectionException          if an error occurs while sending the DELETE request
+     * @throws TMCErrorResponseException       if the tmc answers with an error HTTP status code
+     */
     public void sendTMCDeleteRequest(URI uri, String bearerToken)
             throws TMCConnectionException, TMCConnectorProcessingException, TMCErrorResponseException {
         sendTMCRequest(
@@ -139,6 +182,12 @@ public class TMCHttpClient {
         }
     }
 
+    /**
+     * Authenticate against the TMC and create a bearerToken for further TMC api calls.
+     *
+     * @param authentication parameters of the connector request
+     * @return bearerToken to authenticate further TMC api calls
+     */
     public String tmcAuthenticate(@NotNull @Valid TMCAuthentication authentication) {
         TMCAuthenticationType type = TMCAuthenticationType.valueFrom(authentication.authenticationType());
 
@@ -154,6 +203,15 @@ public class TMCHttpClient {
         }
     }
 
+    /**
+     * Create a {@link URI} to be used to send requests against the TMC
+     * Use the {@link TMCRegionToEndpoint} enum to map the region to an endpoint url.
+     *
+     * @param endpoint baseURL which is represented by the TMC region
+     * @param params   query parameters to add to the request URI
+     * @param api      part to add to the endpoint URL
+     * @return full request {@link URI} with query params
+     */
     public static URI createUri(TMCEndpoint endpoint, Map<String, Object> params, String api) {
         StringBuilder url = new StringBuilder();
         url.append(TMCRegionToEndpoint.getEndpointByRegionName(endpoint.region()));
