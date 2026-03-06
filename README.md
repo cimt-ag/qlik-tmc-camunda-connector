@@ -133,3 +133,48 @@ This api spec can be found at in the [official TMC documentation](https://talend
 
 The API model within the maven lifecycle. If you ever need to adjust the API model, download the swagger-configuration and run ``mvn clean compile``
 
+### application.yaml
+
+To develop and run the connector locally you need to configure the connector. 
+The following are the basic configuration you have to provide to run the connector and connect to the SaaS Camunda Platform.
+The configuration are supposed to be provided in an ``application.yaml``. This ``application.yaml`` should be placed under the [test resources](src/test/resources). 
+This file is included into the [.gitignore](.gitignore) to prevent leaking secrets.
+
+````yaml
+camunda:
+  client:
+    mode: saas
+    auth:
+      client-id: {{your_client_id}}
+      client-secret: {{your_client_secret}}
+    cloud:
+      cluster-id: {{your_cluster_id}}
+      region: {{your_region}}
+````
+
+To run the integration tests you can provide following additional configurations:
+
+````yaml
+tmc:
+  access-token: {{your_personal_access_token}}
+  environment-id: {{your_tmc_environment_id}}
+  task:
+    name: {{task_name}}
+    id: {{task_id}}
+    execution-id: {{execution_id}}
+````
+
+To see the debug logs you can provide the following configuration:
+
+````yaml
+logging:
+  level:
+    root: INFO
+    io:
+      camunda:
+        connector: DEBUG
+````
+
+### Start the TMC Connector
+
+To start the TMC Connector you need to start the [Local Connector Runtime](src/test/java/io/camunda/connector/LocalConnectorRuntime.java). This will start the Spring Boot Application.
