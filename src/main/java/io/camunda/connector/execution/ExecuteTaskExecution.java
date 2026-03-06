@@ -39,7 +39,7 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
     public JobExecutionStatusV21 execute() throws TMCConnectorException {
         LOGGER.info("Process: execute task");
 
-        final String bearerToken = client.tmcAuthenticate(request.authentication());
+        client.tmcAuthenticate(request.authentication());
         final URI uri = TMCHttpClient.createUri(
                 request.endpoint(),
                 request.payload().queryParameters(),
@@ -48,7 +48,6 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
         var currentTaskExecution = getCurrentExecution(
                 request.authentication(),
                 request.endpoint(),
-                bearerToken,
                 String.valueOf(request.payload().body().get("executable")));
 
         String executionId;
@@ -61,7 +60,6 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
             var executionidentifier = client.sendTMCPostRequest(
                     uri,
                     request.payload().body(),
-                    bearerToken,
                     Executionidentifier.class);
             if (executionidentifier == null) {
                 throw new TMCConnectionException("Empty Execution Identifier after task execution");
@@ -88,7 +86,6 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
     private Optional<TaskExecutionStatus> getCurrentExecution(
             final TMCAuthentication authentication,
             final TMCEndpoint endpoint,
-            final String authToken,
             final String taskId) throws TMCConnectorException {
         if (taskId == null || taskId.isEmpty()) {
             LOGGER.debug("No task id provided");
@@ -96,7 +93,7 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
         }
 
         var lastExecutions = new GetTaskExecutionsExecution()
-                .args(taskId, authToken)
+                .args(taskId)
                 .client(client)
                 .request(new TMCPayloadRequest(
                         authentication,

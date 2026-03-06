@@ -25,16 +25,14 @@ public class TerminateTaskExecution extends AbstractConnectorExecution<Void, TMC
     @Override
     public Void execute() throws TMCConnectorException {
         LOGGER.info("Process: Terminate Execution {}", executionId);
-        final String bearerToken = client.tmcAuthenticate(request.authentication());
+        client.tmcAuthenticate(request.authentication());
 
         final URI uri = TMCHttpClient.createUri(
                 request.endpoint(),
                 Map.of(),
                 TERMINATE_TASK_EXECUTION_API.apply(executionId));
 
-        client.sendTMCDeleteRequest(
-                uri,
-                bearerToken);
+        client.sendTMCDeleteRequest(uri);
 
         LOGGER.info("Completed: Terminate Tasks Execution");
 

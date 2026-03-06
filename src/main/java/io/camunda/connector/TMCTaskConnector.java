@@ -1,6 +1,5 @@
 package io.camunda.connector;
 
-import io.camunda.connector.api.annotation.Header;
 import io.camunda.connector.api.annotation.Operation;
 import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.annotation.Variable;
@@ -75,11 +74,10 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
 
     @Operation(id = "getTaskExecutions", name = "Get Task Executions")
     public PageTaskExecutionStatus getTaskExecutions(@Variable TMCPayloadRequest request,
-                                                     @Variable(name = "getTaskExecutions_taskId") String taskId,
-                                                     @Header(name = "bearerToken", required = false) String token) {
+                                                     @Variable(name = "getTaskExecutions_taskId") String taskId) {
         LOGGER.info("Get Task Executions request");
         return execute(new GetTaskExecutionsExecution()
-                .args(taskId, token)
+                .args(taskId)
                 .client(client)
                 .request(request));
     }

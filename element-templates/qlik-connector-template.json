@@ -136,7 +136,7 @@
     {
       "id": "authentication.base64Credentials",
       "label": "Base64 Credentials",
-      "description": "Base64 encoded credentials to provide the service account credentials - please provide eighter this base64 encoded secret or the accounts id and accounts secret",
+      "description": "Base64 encoded credentials to provide the service account credentials - please provide either this base64 encoded secret or the accounts id and accounts secret",
       "optional": false,
       "constraints": {
         "notEmpty": true

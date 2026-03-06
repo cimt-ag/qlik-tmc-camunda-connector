@@ -42,6 +42,7 @@ public class TMCHttpClient {
             (String taskId) -> String.format("/orchestration/executables/tasks/%s", taskId);
 
     private final ObjectMapper mapper;
+    private String authToken;
 
     public TMCHttpClient() {
         this.mapper = new ObjectMapper();
@@ -51,12 +52,12 @@ public class TMCHttpClient {
 
     /**
      * Sends a GET Request to the TMC.
-     * This method expects to receive a valid barerToken to authenticate the request with. Use the
-     * {@link #tmcAuthenticate(TMCAuthentication)} method to authenticate at the tmc and receive a valid bearerToken.
+     * This method expects the client to contain valid barerToken to authenticate the request with. Use the
+     * {@link #tmcAuthenticate(TMCAuthentication)} method to authenticate at the tmc and set up the TMCHttpClient
+     * with a valid bearerToken.
      * This method expects an uri for the request. You can use {@link #createUri(TMCEndpoint, Map, String)} to create the uri.
      *
      * @param uri          Path to use for the request
-     * @param bearerToken  to authenticate at the tmc - can be a personal access token or jwt from the auth endpoint
      * @param responseType class definition of the return type
      * @param <T>          class of the return type
      * @return the response of the GET request mapped to the {@param responseType}
@@ -64,7 +65,7 @@ public class TMCHttpClient {
      * @throws TMCConnectionException          if an error occurs while sending the GET request
      * @throws TMCErrorResponseException       if the tmc answers with an error HTTP status code
      */
-    public <T> T sendTMCGetRequest(URI uri, String bearerToken, Class<T> responseType)
+    public <T> T sendTMCGetRequest(URI uri, Class<T> responseType)
             throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
         return sendTMCRequest(
                 HttpRequest.newBuilder()
@@ -72,20 +73,20 @@ public class TMCHttpClient {
                         .GET()
                         .header("Content-Type", "application/json")
                         .header("Accept", "application/json")
-                        .header("Authorization", "Bearer " + bearerToken)
+                        .header("Authorization", "Bearer " + this.authToken)
                         .build(),
                 responseType);
     }
 
     /**
      * Sends a POST Request to the TMC.
-     * This method expects to receive a valid barerToken to authenticate the request with. Use the
-     * {@link #tmcAuthenticate(TMCAuthentication)} method to authenticate at the tmc and receive a valid bearerToken.
+     * This method expects the client to contain valid barerToken to authenticate the request with. Use the
+     * {@link #tmcAuthenticate(TMCAuthentication)} method to authenticate at the tmc and set up the TMCHttpClient
+     * with a valid bearerToken.
      * This method expects an uri for the request. You can use {@link #createUri(TMCEndpoint, Map, String)} to create the uri.
      *
      * @param uri          Path to use for the request
      * @param payload      body of the POST request
-     * @param bearerToken  to authenticate at the tmc - can be a personal access token or jwt from the auth endpoint
      * @param responseType class definition of the return type
      * @param <T>          class of the return type
      * @return the response of the POST request mapped to the {@param responseType}
@@ -93,7 +94,7 @@ public class TMCHttpClient {
      * @throws TMCConnectionException          if an error occurs while sending the POST request
      * @throws TMCErrorResponseException       if the tmc answers with an error HTTP status code
      */
-    public <T> T sendTMCPostRequest(URI uri, Map<String, Object> payload, String bearerToken, Class<T> responseType)
+    public <T> T sendTMCPostRequest(URI uri, Map<String, Object> payload, Class<T> responseType)
             throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
         String requestBody;
 
@@ -110,24 +111,24 @@ public class TMCHttpClient {
                         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                         .header("Content-Type", "application/json")
                         .header("Accept", "application/json")
-                        .header("Authorization", "Bearer " + bearerToken)
+                        .header("Authorization", "Bearer " + this.authToken)
                         .build(),
                 responseType);
     }
 
     /**
      * Sends a DELETE Request to the TMC.
-     * This method expects to receive a valid barerToken to authenticate the request with. Use the
-     * {@link #tmcAuthenticate(TMCAuthentication)} method to authenticate at the tmc and receive a valid bearerToken.
+     * This method expects the client to contain valid barerToken to authenticate the request with. Use the
+     * {@link #tmcAuthenticate(TMCAuthentication)} method to authenticate at the tmc and set up the TMCHttpClient
+     * with a valid bearerToken.
      * This method expects an uri for the request. You can use {@link #createUri(TMCEndpoint, Map, String)} to create the uri.
      *
-     * @param uri         Path to use for the request
-     * @param bearerToken to authenticate at the tmc - can be a personal access token or jwt from the auth endpoint
+     * @param uri Path to use for the request
      * @throws TMCConnectorProcessingException if an error occurs handling the response
      * @throws TMCConnectionException          if an error occurs while sending the DELETE request
      * @throws TMCErrorResponseException       if the tmc answers with an error HTTP status code
      */
-    public void sendTMCDeleteRequest(URI uri, String bearerToken)
+    public void sendTMCDeleteRequest(URI uri)
             throws TMCConnectionException, TMCConnectorProcessingException, TMCErrorResponseException {
         sendTMCRequest(
                 HttpRequest.newBuilder()
@@ -135,7 +136,7 @@ public class TMCHttpClient {
                         .DELETE()
                         .header("Content-Type", "application/json")
                         .header("Accept", "application/json")
-                        .header("Authorization", "Bearer " + bearerToken)
+                        .header("Authorization", "Bearer " + this.authToken)
                         .build(),
                 Void.class);
     }
@@ -189,6 +190,12 @@ public class TMCHttpClient {
      * @return bearerToken to authenticate further TMC api calls
      */
     public String tmcAuthenticate(@NotNull @Valid TMCAuthentication authentication) {
+
+        if (this.authToken != null && !this.authToken.isEmpty()) {
+            LOGGER.debug("TMC authentication token already available - reuse token");
+            return this.authToken;
+        }
+
         TMCAuthenticationType type = TMCAuthenticationType.valueFrom(authentication.authenticationType());
 
         if (type == null) {
@@ -197,10 +204,30 @@ public class TMCHttpClient {
 
         if (type == TMCAuthenticationType.BEARER_TOKEN && authentication.bearerToken() != null) {
             LOGGER.debug("Found Bearer Token in request - use bearer token for further authorization flow");
-            return authentication.bearerToken();
+            this.authToken = authentication.bearerToken();
+            return this.authToken;
         } else {
             throw new UnsupportedOperationException("Other authorizations than the bearerToken authorization are not supported yet");
         }
+    }
+
+    /**
+     * invalidates the auth token with the current session is expired and a new token has to be created
+     */
+    public void invalidateAuthToken() {
+        this.authToken = null;
+    }
+
+    /**
+     * ReAuthenticate against the TMC and create a bearerToken for further TMC api calls. First invalidates current
+     * authToken and then calls {@link #tmcAuthenticate(TMCAuthentication)}.
+     *
+     * @param authentication parameters of the connector request
+     * @return bearerToken to authenticate further TMC api calls
+     */
+    public String reauthenticate(@NotNull @Valid TMCAuthentication authentication) {
+        invalidateAuthToken();
+        return tmcAuthenticate(authentication);
     }
 
     /**

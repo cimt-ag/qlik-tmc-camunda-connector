@@ -27,14 +27,14 @@ public class GetTaskExecutionStatusExecution extends AbstractConnectorExecution<
     public JobExecutionStatusV21 execute() throws TMCConnectorException {
         LOGGER.info("Process: Get task execution status");
 
-        final String bearerToken = client.tmcAuthenticate(request.authentication());
+        client.tmcAuthenticate(request.authentication());
 
         final URI uri = TMCHttpClient.createUri(
                 request.endpoint(),
                 Map.of(),
                 EXECUTION_STATUS_API.apply(executionId));
 
-        var result = client.sendTMCGetRequest(uri, bearerToken, JobExecutionStatusV21.class);
+        var result = client.sendTMCGetRequest(uri, JobExecutionStatusV21.class);
 
         LOGGER.info("Completed: get task execution status request");
         LOGGER.debug("Task execution status result: {}", result);

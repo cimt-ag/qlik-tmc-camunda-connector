@@ -154,7 +154,7 @@ public class TMCTaskIntegrationTest {
                 )
         );
 
-        var result = tmcTaskConnector.getTaskExecutions(request, TASK_ID, null);
+        var result = tmcTaskConnector.getTaskExecutions(request, TASK_ID);
 
         assertNotNull(result);
     }

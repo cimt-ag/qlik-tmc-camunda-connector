@@ -16,11 +16,9 @@ public class GetTaskExecutionsExecution extends AbstractConnectorExecution<PageT
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GetTaskExecutionsExecution.class);
 
-    private String token;
     private String taskId;
 
-    public GetTaskExecutionsExecution args(String taskId, String token) {
-        this.token = token;
+    public GetTaskExecutionsExecution args(String taskId) {
         this.taskId = taskId;
         return this;
     }
@@ -29,8 +27,7 @@ public class GetTaskExecutionsExecution extends AbstractConnectorExecution<PageT
     public PageTaskExecutionStatus execute() throws TMCConnectorException {
         LOGGER.info("Process: Get task execution");
 
-        final String bearerToken = token != null && !token.isEmpty() ?
-                token : client.tmcAuthenticate(request.authentication());
+        client.tmcAuthenticate(request.authentication());
 
         Map<String, Object> queryParams = Map.of();
         if (request.payload() != null && request.payload().queryParameters() != null) {
@@ -42,7 +39,7 @@ public class GetTaskExecutionsExecution extends AbstractConnectorExecution<PageT
                 queryParams,
                 TASK_EXECUTIONS_API.apply(taskId));
 
-        var result = client.sendTMCGetRequest(uri, bearerToken, PageTaskExecutionStatus.class);
+        var result = client.sendTMCGetRequest(uri, PageTaskExecutionStatus.class);
 
         LOGGER.info("Completed: get task execution request");
         LOGGER.debug("Task execution result: {}", result);

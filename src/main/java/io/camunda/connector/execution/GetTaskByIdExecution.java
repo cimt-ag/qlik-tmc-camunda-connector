@@ -26,15 +26,14 @@ public class GetTaskByIdExecution extends AbstractConnectorExecution<TaskV21, TM
     @Override
     public TaskV21 execute() throws TMCConnectorException {
         LOGGER.info("Process: Get task by Id");
-
-        final String bearerToken = client.tmcAuthenticate(request.authentication());
+        client.tmcAuthenticate(request.authentication());
 
         final URI uri = TMCHttpClient.createUri(
                 request.endpoint(),
                 Map.of(),
                 GET_TASK_BY_ID_API.apply(taskId));
 
-        var result = client.sendTMCGetRequest(uri, bearerToken, TaskV21.class);
+        var result = client.sendTMCGetRequest(uri, TaskV21.class);
 
         LOGGER.info("Completed: get task by id request");
         LOGGER.debug("Task by id result: {}", result);

@@ -19,10 +19,10 @@ public class GetAvailableTasksExecution extends AbstractConnectorExecution<PageT
     public PageTask execute() throws TMCConnectorException {
         LOGGER.info("Process: Get available tasks request");
 
-        final String bearerToken = client.tmcAuthenticate(request.authentication());
+        client.tmcAuthenticate(request.authentication());
         final URI uri = TMCHttpClient.createUri(request.endpoint(), request.payload().queryParameters(), GET_TASKS_API);
 
-        var result = client.sendTMCGetRequest(uri, bearerToken, PageTask.class);
+        var result = client.sendTMCGetRequest(uri, PageTask.class);
 
         LOGGER.info("Completed: get available tasks request");
         LOGGER.debug("Get available tasks request result: {}", result);
