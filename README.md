@@ -14,6 +14,20 @@ After selecting an operation, the configuration fields (such as payload paramete
 
 This allows the connector to support multiple TMC API functionalities within a single connector while keeping the configuration simple and operation-specific.
 
+### Available Operations
+
+The connector provides several operations to interact with the TMC APIs. Each operation can be selected in the **Endpoint** section when configuring the connector in a service task.
+
+| Operation                         | Description                                                                                                  |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------|
+| **Get Available Tasks**           | Retrieves a list of available tasks with metadata. Tasks can be filtered using optional query parameters.    |
+| **Execute Task**                  | Executes a task and waits for the task termination                                                           |
+| **Get Task by ID**                | Retrieves detailed metadata and configuration information for a specific task using its `taskId`.            |
+| **Get Task Executions**           | Retrieves execution history for a specific task. Supports filtering by time range and execution status.      |
+| **Get Available Task Executions** | Retrieves executions across all tasks with optional filters such as workspace, environment, status, or tags. |
+| **Get Task Execution Status**     | Retrieves the current status and metadata of a specific task execution using an `executionId`.               |
+| **Terminate Task Execution**      | Forcefully stops a running task execution using its `executionId`.                                           |
+
 ### Get Available Tasks
 
 Retrieve a list of available tasks from TMC based on optional query parameters.
