@@ -8,13 +8,21 @@ Therefor we combine the best of the two worlds - data pipelines with process orc
 
 ### Get Available Tasks
 
-- Search for tasks based on query parameter
-- With this operation you can query the taskId (parameter: executable) 
-- returns a list of tasks extracts with metadata about the task
-- get more Information about the API Call from the [TMC API Definition](https://talend.qlik.dev/apis/orchestration/2021-03/#operation_get-available-tasks)
+Retrieve a list of available tasks from TMC based on optional query parameters.
+
+This operation allows users to search and filter tasks and returns metadata about each available task.
+
+- Queries available tasks from the TMC API
+- Supports filtering using multiple optional query parameters
+- Returns a list of tasks including metadata
+- can be used to dynamically determine executable tasks in a workflow
+- for more details see the [TMC API Definition](https://talend.qlik.dev/apis/orchestration/2021-03/#operation_get-available-tasks)
 
 #### Payload
-Use these as _query parameter_ in the payload group
+
+Customize the **Get Available Tasks** operation with additional _optional_ query parameters in the **Payload** section.
+All parameters are optional and correspond directly to the parameters of the TMC API.
+
 ````json
 {
   "environmentId": "string (optional)",
@@ -29,7 +37,31 @@ Use these as _query parameter_ in the payload group
 }
 ````
 
+#### Output / Result
+
+The Operation returns a [PageTask](https://talend.qlik.dev/apis/orchestration/2021-03/#type_pagetask) object
+- contains paging metadata which can be used to retrieve large result sets in multiple requests
+- contains a list of [items](https://talend.qlik.dev/apis/orchestration/2021-03/#type_taskextract) representing the available tasks
+- each item has metadata describing the task:
+  - **executable** - the unique task identifier 
+  - **artifactId** - identifier of the artifact the task belongs to
+  - **name** - name of the task
+  - **workspace information**  workspace the task is located in
+  - **runtime information** - runtime environment to execute the task
+
+A common use case is retrieving the taskId of a task by its name in order to execute the task. 
+
+You can use the following example as _Result expression_ in the output section to extract the taskId:
+
+````FEEL
+{
+  taskId: items[1].executable
+}
+````
+
 #### Error
+
+If the operation fails during execution, the connector throws the following BPMN Errors which can be handled using boundary error events in the process model. 
 
 | Error Code                     | Description / Cause                                                |
 |--------------------------------|--------------------------------------------------------------------|
