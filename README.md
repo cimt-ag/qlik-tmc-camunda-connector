@@ -7,11 +7,9 @@ Therefor we combine the best of the two worlds - data pipelines with process orc
 ## Task Connector Operations
 
 This connector provides multiple operations that allow interaction with the TMC APIs.
-
 Each operation represents a specific API action, such as retrieving available tasks, starting a task execution, or checking the status of a running execution.
 
 When configuring the connector in a service task, the desired operation can be selected in the Endpoint section of the connector configuration.
-
 After selecting an operation, the configuration fields (such as payload parameters) are automatically adjusted to match the requirements of the chosen operation.
 
 This allows the connector to support multiple TMC API functionalities within a single connector while keeping the configuration simple and operation-specific.
@@ -30,7 +28,7 @@ This operation allows users to search and filter tasks and returns metadata abou
 
 #### Payload
 
-Customize the **Get Available Tasks** operation with additional _optional_ query parameters in the **Payload** section.
+Customize the **Get Available Tasks** operation with additional _optional_ **query parameters** in the **Payload** section.
 All parameters are optional and correspond directly to the parameters of the TMC API.
 
 ````json
@@ -100,7 +98,7 @@ If the operation fails during execution, the connector throws the following BPMN
 
 Retrieve the current execution status of a task using its executionId.
 
-This operation allows you to monitor the execution of a task and retrieve additional metadata about the execution.
+This operation allows users to monitor the execution of a task and retrieve additional metadata about the execution.
 
 It can be used to obtain information such as:
 - current execution status
@@ -160,9 +158,85 @@ If the operation fails during execution, the connector throws the following BPMN
 
 ### Get Available Tasks Executions
 
+Get available task executions across all tasks.
+
+This operation allows users to query task executions using optional filters. It is useful for monoitoring task activity, identifying failed executions, or analyzing execution history.
+
+Executions can be filtered by:
+- environment - restrict results to a specific environment
+- workspace - restrict results to a specific workspace
+- execution status
+- tags associated with tasks
+- time range
+
+For a detailed documentation see the [TMC API definition](https://talend.qlik.dev/apis/processing/2021-03/#operation_get-available-task-executions)
+
 #### Payload
 
+The **Get Available Task Executions** operation can be configured using parameters in the Payload section. 
+All parameters are optional and correspond directly to the parameters of the TMC API.
+THe parameters must be provided in the request body as a [TaskExectionsFilters](https://talend.qlik.dev/apis/processing/2021-03/#type_taskexecutionsfilters) object.
+
+Example structure:
+
+````json
+{
+  "environmentId": "string (Optional)",
+  "workspaceId": "string (Optional)",
+  "status": "string Enum (Optional)",
+  "tags": "array of string (Optional)",
+  "lastDays": "integer (Optional)",
+  "from": "integer (Optional)",
+  "to": "integer (Optional)",
+  "limit": "integer (Optional)",
+  "offset": "integer (Optional)"
+}
+````
+
+**Note**
+
+| When neither the number of days nor a datetime period is provided, the default 60 days time range is applied. |
+|---------------------------------------------------------------------------------------------------------------|
+
+#### Output
+
+The Operation returns a [PageTaskExecutionStatus](https://talend.qlik.dev/apis/processing/2021-03/#type_pagetaskexecutionstatus) object.
+The response contains:
+- paging metadata which can be used to retrieve large result sets in multiple requests
+- a list of [items](https://talend.qlik.dev/apis/processing/2021-03/#type_taskexecutionstatus) representing the available executions
+- each item has metadata describing the execution:
+  - **taskId** - the unique task identifier of the execution
+  - **executionId** - the unique identifier of the execution
+  - **taskVersion** - version of the executed task
+  - **executionType** - type of the execution (manual, scheduled, webhook, plan)
+  - **userId** - user who triggered or scheduled the execution
+  - **userType** - Type of  user who triggered or scheduled the execution (HUMAN, SERVICE)
+  - **status** - status of the execution
+  - **errorMessage** - Error message if an error occurs
+  - **runtime information** - runtime environment to execute the task (as an object)
+
+A common use case is retrieving execution information for monitoring or troubleshooting task executions.
+
+The results can be filtered or analyzed in the process using FEEL expression.
+
+![Get Tasks Executions - Output Mapping](documentation/get_tasks_executions_output_mapping_example.png)
+
+Example filters
+
+````FEEL
+# filter for non successful executions
+taskExecutionStatus.items[i.executionStatus != "EXECUTION_SUCCESS"]
+
+# get errorMessages of unsuccessful executions
+taskExecutionStatus.items[i.executionStatus != "EXECUTION_SUCCESS"].errorMessage
+
+# filter for executions of a specific task
+taskExecutionStatus.items[i.taskId = id]
+````
+
 #### Error
+
+If the operation fails during execution, the connector throws the following BPMN Errors which can be handled using boundary error events in the process model.
 
 | Error Code                     | Description / Cause                                                  |
 |--------------------------------|----------------------------------------------------------------------|
