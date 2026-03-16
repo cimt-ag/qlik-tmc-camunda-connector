@@ -175,7 +175,7 @@ For a detailed documentation see the [TMC API definition](https://talend.qlik.de
 
 The **Get Available Task Executions** operation can be configured using parameters in the Payload section. 
 All parameters are optional and correspond directly to the parameters of the TMC API.
-THe parameters must be provided in the request body as a [TaskExectionsFilters](https://talend.qlik.dev/apis/processing/2021-03/#type_taskexecutionsfilters) object.
+The parameters must be provided in the request body as a [TaskExectionsFilters](https://talend.qlik.dev/apis/processing/2021-03/#type_taskexecutionsfilters) object.
 
 Example structure:
 
@@ -200,7 +200,7 @@ Example structure:
 
 #### Output
 
-The Operation returns a [PageTaskExecutionStatus](https://talend.qlik.dev/apis/processing/2021-03/#type_pagetaskexecutionstatus) object.
+The operation returns a [PageTaskExecutionStatus](https://talend.qlik.dev/apis/processing/2021-03/#type_pagetaskexecutionstatus) object.
 The response contains:
 - paging metadata which can be used to retrieve large result sets in multiple requests
 - a list of [items](https://talend.qlik.dev/apis/processing/2021-03/#type_taskexecutionstatus) representing the available executions
@@ -247,7 +247,87 @@ If the operation fails during execution, the connector throws the following BPMN
 
 ### Get Task Executions
 
+Retrieve executions of a specific task.
+
+This operation allows users to query executions and the execution history of a single task using optional filters. 
+
+This task can be used to:
+- check scheduled task runs against maintenance timetables
+- Monitor a specific task
+- Live monitoring of a task run
+- Fetching Executions periodically for analysis
+- Troubleshooting an erroneous task
+
+Executions can be filtered by:
+- from - start date of the filter period
+- to - end date of the filter period
+- lastDays - Number of days in the past
+- status - execution status
+
+For a detailed documentation see the [TMC API definition](https://talend.qlik.dev/apis/processing/2021-03/#operation_get-task-executions)
+
 #### Payload
+
+The **Get Task Executions** operation can be configured using parameters in the Payload section.
+All parameters are optional and correspond directly to the parameters of the TMC API and must be provided as _query parameters_.
+
+Required parameter:
+- taskId – identifier of the task whose executions should be retrieved
+
+To retrieve execution of a specific task a taskId must be provided in the **Payload** section.
+If the taskId is evaluated dynamically you can use dynamic FEEL expression.
+
+![Payload example](documentation/get_task_executions_payload_example.png)
+
+Optional parameters allowing filtering the execution history and controlling pagination of the result set:
+
+````json
+{
+  "from": "integer (Optional)",
+  "offset": "integer (Optional)",
+  "to": "integer (Optional)",
+  "limit": "integer (Optional)",
+  "status": "string Enum (Optional)",
+  "lastDays": "integer (Optional) [1-60 Range]"
+}
+````
+
+#### Output
+
+The **Get Task Executions** operation returns a [PageTaskExecutionStatus](https://talend.qlik.dev/apis/processing/2021-03/#type_pagetaskexecutionstatus) object.
+The response contains:
+- paging metadata which can be used to retrieve large result sets in multiple requests
+- a list of [items](https://talend.qlik.dev/apis/processing/2021-03/#type_taskexecutionstatus) representing the available executions 
+
+Each item has metadata describing the execution:
+- **taskId** - the unique task identifier of the execution
+- **executionId** - the unique identifier of the execution
+- **taskVersion** - version of the executed task
+- **executionType** - type of the execution (manual, scheduled, webhook, plan)
+- **userId** - user who triggered or scheduled the execution
+- **userType** - Type of  user who triggered or scheduled the execution (HUMAN, SERVICE)
+- **status** - status of the execution
+- **errorMessage** - Error message if an error occurs
+- **runtime information** - runtime environment to execute the task (as an object)
+
+A common use case is retrieving execution information for monitoring or troubleshooting task executions.
+
+The results can be filtered or analyzed in the process using FEEL expression.
+
+![Get Tasks Executions - Output Mapping](documentation/get_tasks_executions_output_mapping_example.png)
+
+Example filters
+
+````FEEL
+# filter for non successful executions
+taskExecutionStatus.items[i.executionStatus != "EXECUTION_SUCCESS"]
+
+# get errorMessages of unsuccessful executions
+taskExecutionStatus.items[i.executionStatus != "EXECUTION_SUCCESS"].errorMessage
+
+# filter for executions of a specific task
+taskExecutionStatus.items[i.taskId = id]
+````
 
 #### Error
 
