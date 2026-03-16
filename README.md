@@ -73,12 +73,12 @@ You can use the following example as _Result expression_ in the output section t
 
 If the operation fails during execution, the connector throws the following BPMN Errors which can be handled using boundary error events in the process model. 
 
-| Error Code                     | Description / Cause                                                 |
-|--------------------------------|---------------------------------------------------------------------|
-| TMC_RESPONSE_ERROR              | TMC Request wasnt successful and TMC answered with error HTTP Code |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                        |
-| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                       |
-| TMC_TECHNICAL_ERROR            | technical error                                                     |
+| Error Code                     | Description / Cause                                                  |
+|--------------------------------|----------------------------------------------------------------------|
+| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code   |
+| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                         |
+| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                        |
+| TMC_TECHNICAL_ERROR            | technical error                                                      |
 
 ### Execute Task
 
@@ -88,13 +88,13 @@ If the operation fails during execution, the connector throws the following BPMN
 
 #### Error
 
-| Error Code                     | Description / Cause                                                                                |
-|--------------------------------|----------------------------------------------------------------------------------------------------|
-| TASK_EXECUTION_FAILED          | The Task execution was not successful or detaching the monitoring due to exceeding the retry limit |
-| TMC_RESPONSE_ERROR              | TMC Request wasnt successful and TMC answered with error HTTP Code                                |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                                                       |
-| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                                                      |
-| TMC_TECHNICAL_ERROR            | technical error                                                                                    |
+| Error Code                     | Description / Cause                                                                                 |
+|--------------------------------|-----------------------------------------------------------------------------------------------------|
+| TASK_EXECUTION_FAILED          | The Task execution was not successful or detaching the monitoring due to exceeding the retry limit  |
+| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code                                  |
+| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                                                        |
+| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                                                       |
+| TMC_TECHNICAL_ERROR            | technical error                                                                                     |
 
 ### Get Task Execution Status
 
@@ -151,12 +151,12 @@ Check the [API documentation](https://talend.qlik.dev/apis/processing/2021-03/#t
 
 If the operation fails during execution, the connector throws the following BPMN Errors which can be handled using boundary error events in the process model.
 
-| Error Code                     | Description / Cause                                                 |
-|--------------------------------|---------------------------------------------------------------------|
-| TMC_RESPONSE_ERROR              | TMC Request wasnt successful and TMC answered with error HTTP Code |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                        |
-| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                       |
-| TMC_TECHNICAL_ERROR            | technical error                                                     |
+| Error Code                     | Description / Cause                                                  |
+|--------------------------------|----------------------------------------------------------------------|
+| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code   |
+| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                         |
+| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                        |
+| TMC_TECHNICAL_ERROR            | technical error                                                      |
 
 ### Get Available Tasks Executions
 
@@ -164,12 +164,12 @@ If the operation fails during execution, the connector throws the following BPMN
 
 #### Error
 
-| Error Code                     | Description / Cause                                                 |
-|--------------------------------|---------------------------------------------------------------------|
-| TMC_RESPONSE_ERROR              | TMC Request wasnt successful and TMC answered with error HTTP Code |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                        |
-| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                       |
-| TMC_TECHNICAL_ERROR            | technical error                                                     |
+| Error Code                     | Description / Cause                                                  |
+|--------------------------------|----------------------------------------------------------------------|
+| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code   |
+| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                         |
+| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                        |
+| TMC_TECHNICAL_ERROR            | technical error                                                      |
 
 ### Get Task Executions
 
@@ -177,12 +177,12 @@ If the operation fails during execution, the connector throws the following BPMN
 
 #### Error
 
-| Error Code                     | Description / Cause                                                  |
-|--------------------------------|----------------------------------------------------------------------|
-| TMC_RESPONSE_ERROR              | TMC Request wasnt successful and TMC answered with error HTTP Code  |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                         |
-| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                        |
-| TMC_TECHNICAL_ERROR            | technical error                                                      |
+| Error Code                     | Description / Cause                                                   |
+|--------------------------------|-----------------------------------------------------------------------|
+| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code    |
+| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                          |
+| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                         |
+| TMC_TECHNICAL_ERROR            | technical error                                                       |
 
 ### Get Task by ID
 
@@ -190,12 +190,12 @@ If the operation fails during execution, the connector throws the following BPMN
 
 #### Error
 
-| Error Code                     | Description / Cause                                                 |
-|--------------------------------|---------------------------------------------------------------------|
-| TMC_RESPONSE_ERROR              | TMC Request wasnt successful and TMC answered with error HTTP Code |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                        |
-| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                       |
-| TMC_TECHNICAL_ERROR            | technical error                                                     |
+| Error Code                     | Description / Cause                                                  |
+|--------------------------------|----------------------------------------------------------------------|
+| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code   |
+| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                         |
+| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                        |
+| TMC_TECHNICAL_ERROR            | technical error                                                      |
 
 ### Terminate Task Execution
 
@@ -203,12 +203,12 @@ If the operation fails during execution, the connector throws the following BPMN
 
 #### Error
 
-| Error Code                     | Description / Cause                                                 |
-|--------------------------------|---------------------------------------------------------------------|
-| TMC_RESPONSE_ERROR              | TMC Request wasnt successful and TMC answered with error HTTP Code |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                        |
-| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                       |
-| TMC_TECHNICAL_ERROR            | technical error                                                     |
+| Error Code                     | Description / Cause                                                  |
+|--------------------------------|----------------------------------------------------------------------|
+| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code   |
+| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                         |
+| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                        |
+| TMC_TECHNICAL_ERROR            | technical error                                                      |
 
 ## Developer Guide - getting started
 
