@@ -80,9 +80,70 @@ If the operation fails during execution, the connector throws the following BPMN
 
 ### Execute Task
 
-- If a retry happens the last execution of the given executable will be monitored
+Execute a task in TMC and monitor its execution until completion.
+This operation starts a task execution and periodically checks the execution status until the task finishes.
+
+Key behavior:
+- Executes a task using its executable (taskId)
+- Automatically monitors the execution status
+- Configurable offset, polling period,and retry limit for status checks
+- Throws a BPMN error if the execution is unsuccessful
+- If the connector task is retried, the last execution if the given executable will be monitored
+
+- for more details see the [TMC API Definition](https://talend.qlik.dev/apis/processing/2021-03/#operation_execute-task)
 
 #### Payload
+
+The Execute Task operation can be configured using parameters in the Payload section. The payload must be provided as a request body using an [ExecutableTask](https://talend.qlik.dev/apis/processing/2021-03/#type_executabletask) object.
+All parameters are optional and correspond directly to the parameters of the TMC API and need to be modeled as request body.
+
+![Execute Task Payload Example](documentation/execute_task_payload_example.png)
+
+Example Payload:
+
+````json
+{
+  "executable": "string (Required)",
+  "parameters": "object (Optional)",
+  "logLevel": "string (Optional)",
+  "timeout": "integer (Optional"
+}
+````
+
+Execution Monitoring Configuration:
+- Offset in Seconds - Offset to start the task execution monitoring (Default: 60)
+- Period in Seconds - Period to check the Status of the task execution (Default: 60)
+- Limit to check Status - How many attempts for checking the status of the task execution (Default: 100)
+These parameters control how long and how often the connector polls the execution status.
+
+#### Output 
+
+The operation returns a [JobExecutionStatus](https://talend.qlik.dev/apis/processing/2021-03/#type_jobexecutionstatusv21) object contain metadata about the execution.
+
+The response includes information such as:
+- executionId - unique identifier of the execution
+- executionStatus - current status of the execution
+- startTimestamp / finishTimestamp - start and end time of the execution
+- triggerTimestamp - timestamp when the execution was triggered
+- userId - identifier of the user who triggered the execution
+- workspaceId - workspace of the artifact and task
+- processing statistics
+  - numberOfProcessedRows
+  - numberOfRejectedRows
+- error information
+  - errorType
+  - errorMessage
+
+You can use the execution result to check if the execution was successful or not. For this you can use an Output Mapping as such:
+
+![Output Mapping Example](documentation/get_task_execution_status_output_mapping_example.png)
+
+Use a FEEL expression to check if the execution was successful in a Gateway:
+````FEEL
+executionStatus = "EXECUTION_SUCCESS"
+````
+
+Check the [API documentation](https://talend.qlik.dev/apis/processing/2021-03/#type_jobexecutionstatusv21) for more execution states.
 
 #### Error
 
