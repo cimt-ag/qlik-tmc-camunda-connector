@@ -36,7 +36,7 @@ All parameters are optional and correspond directly to the parameters of the TMC
   "environmentId": "string (optional)",
   "offset": "integer - (optional)",
   "runtimeRunProfileId": "string - (optional)",
-  "runtimeType": "Enum(CLOUD, REMOTE_ENGINE, REMOTE_ENGINE_CLUSTER, CLOUD_EXCLUSIVE, PIPELINE_ENGINE) (optional)",
+  "runtimeType": "string Enum (optional)",
   "workspaceId": "string (optional)",
   "name": "string - (optional)",
   "limit": "integer - (optional)",
@@ -251,7 +251,7 @@ Retrieve executions of a specific task.
 
 This operation allows users to query executions and the execution history of a single task using optional filters. 
 
-This task can be used to:
+This operation can be used to:
 - check scheduled task runs against maintenance timetables
 - Monitor a specific task
 - Live monitoring of a task run
@@ -340,7 +340,35 @@ taskExecutionStatus.items[i.taskId = id]
 
 ### Get Task by ID
 
+Retrieve detailed information about a specific task using its taskId.
+
+This operation allows users to retrieve a task with all its attributes and metadata. It can be used to inspect the configuration and retrieve metadata about a task.
+
+For a detailed documentation see the [TMC API definition](https://talend.qlik.dev/apis/orchestration/2021-03/#operation_get-task-by-id)
+
 #### Payload
+
+To retrieve the task the user needs to provide a taskId in the **Payload** section.
+If the taskId is evaluated dynamically you can use dynamic FEEL expression.
+
+![Payload example](documentation/get_task_by_id_payload_example.png)
+
+#### Output
+
+The operation returns a [TaskV21](https://talend.qlik.dev/apis/orchestration/2021-03/#type_taskv21) object.
+The response contains:
+- id - unique identifier of the task
+- name - name of the task
+- description - task description
+- artifact - Data about the artifact
+- version - task version
+- tags - array of tags attached to the task
+- parameters - Key value parameter to configure a task execution run
+
+Typical use cases include:
+- retrieving metadata about a task
+- validating task configuration before execution
+- inspecting artifact and runtime configuration
 
 #### Error
 
