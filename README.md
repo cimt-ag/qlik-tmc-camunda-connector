@@ -6,6 +6,16 @@ Therefor we combine the best of the two worlds - data pipelines with process orc
 
 ## Task Connector Operations
 
+This connector provides multiple operations that allow interaction with the TMC APIs.
+
+Each operation represents a specific API action, such as retrieving available tasks, starting a task execution, or checking the status of a running execution.
+
+When configuring the connector in a service task, the desired operation can be selected in the Endpoint section of the connector configuration.
+
+After selecting an operation, the configuration fields (such as payload parameters) are automatically adjusted to match the requirements of the chosen operation.
+
+This allows the connector to support multiple TMC API functionalities within a single connector while keeping the configuration simple and operation-specific.
+
 ### Get Available Tasks
 
 Retrieve a list of available tasks from TMC based on optional query parameters.
