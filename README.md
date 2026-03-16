@@ -381,7 +381,24 @@ Typical use cases include:
 
 ### Terminate Task Execution
 
+The **Terminate Task Execution** forcefully stops a runing task execution.
+
+This operation can be used to stop a running task execution when domain-specific errors occur or when a termination is triggered by another service or process event.
+
+For a detailed documentation see the [TMC API definition](https://talend.qlik.dev/apis/processing/2021-03/#operation_terminate-task-execution)
+
 #### Payload
+
+To stop an execution the user needs to provide an executionId in the **Payload** section.
+If the executionId is evaluated dynamically you can use dynamic FEEL expression.
+
+![Payload example](documentation/terminate_task_execution_payload_example.png)
+
+No additional query parameters or request body fields are required.
+
+#### Output
+
+The connector task completes without producing output variables.
 
 #### Error
 
