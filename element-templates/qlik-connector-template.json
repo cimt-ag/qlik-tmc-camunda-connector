@@ -93,7 +93,7 @@
     },
     {
       "id": "authentication.serviceAccountId",
-      "label": "Client ID",
+      "label": "Service Account Client ID",
       "description": "Your service account's ID to connect to the TMC",
       "optional": false,
       "constraints": {
@@ -114,7 +114,7 @@
     },
     {
       "id": "authentication.accountSecret",
-      "label": "Account secret",
+      "label": "Service Account Secret",
       "description": "Your service account's secret to connect to the TMC",
       "optional": false,
       "constraints": {

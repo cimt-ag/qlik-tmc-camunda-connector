@@ -4,6 +4,40 @@ Therefor we combine the best of the two worlds - data pipelines with process orc
 
 ## Authentication
 
+To use this connector, you must provide valid credentials to authenticate against TMC.
+
+The connector supports the following authentication methods:
+- Service Account
+- Bearer Token (TMC Personal Access Token)
+
+### Service Account
+
+**This Authentication method is currently in BETA**
+
+The Service Account authentication flow is used to connect to TMC using a service account.
+Follow this guide to create a service account: [Create a Service Account](https://talend.qlik.dev/use-cases/service-accounts/creating-a-service-account/).
+
+To configure this authentication methode, provide:
+- Service Account ID
+- Service Account Secret
+
+![Authentication - Service Account](documentation/AUTHENTICATION_SERVICE_ACCOUNT.png)
+
+The connector uses the provided credentials to request an authentication token from TMC.
+This token is then used to authenticate all subsequent API requests.
+
+For operations that involve multiple requests (such as Execute Task), the authentication token is reused.
+This means authentication is performed only once per connector execution.
+
+### Bearer Token (TMC Personal Access Token)
+
+The Bearer Token authentication method uses a bearer Token to authenticate TMC requests. 
+This method allows to authenticate requests using a personal access token.
+
+Follow this guide to create your own personal access token: [Generating a Personal Access Token](https://help.qlik.com/talend/en-US/management-console-with-pipeline-designer/Cloud/cloud-access-token)
+
+Using a personal access token within the bearer token authentication flow means Task executions are performed under the user account associated with the token.
+
 ## Task Connector Operations
 
 This connector provides multiple operations that allow interaction with the TMC APIs.
