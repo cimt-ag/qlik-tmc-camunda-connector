@@ -105,7 +105,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
     private <T> T execute(TMCConnectorExecution<T, ?> execution) throws ConnectorException {
         final String taskExecutionFailed = "TASK_EXECUTION_FAILED";
         final String tmcConnectionFailed = "TMC_CONNECTION_FAILED";
-        final String tmcErrorResponse = "TMC_REPONSE_ERROR";
+        final String tmcErrorResponse = "TMC_RESPONSE_ERROR";
         final String tmcConnectorProcessingError = "TMC_CONNECTOR_PROCESSING_ERROR";
         final String tmcTechnicalError = "TMC_TECHNICAL_ERROR";
 

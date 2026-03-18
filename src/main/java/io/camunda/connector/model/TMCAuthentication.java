@@ -4,7 +4,6 @@ public record TMCAuthentication(
         String authenticationType,
         String serviceAccountId,
         String accountSecret,
-        String base64Credentials,
         String bearerToken
 ) {
 }
