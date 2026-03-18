@@ -74,10 +74,6 @@
       "value": "bearerToken",
       "choices": [
         {
-          "name": "base64 encoded secret",
-          "value": "base64"
-        },
-        {
           "name": "Service Account Credentials Set",
           "value": "credentialsSet"
         },
@@ -129,27 +125,6 @@
       "group": "authentication",
       "binding": {
         "name": "authentication.accountSecret",
-        "type": "zeebe:input"
-      },
-      "type": "String"
-    },
-    {
-      "id": "authentication.base64Credentials",
-      "label": "Base64 Credentials",
-      "description": "Base64 encoded credentials to provide the service account credentials - please provide either this base64 encoded secret or the accounts id and accounts secret",
-      "optional": false,
-      "constraints": {
-        "notEmpty": true
-      },
-      "condition": {
-        "property": "authentication.authenticationType",
-        "equals": "base64",
-        "type": "simple"
-      },
-      "feel": "optional",
-      "group": "authentication",
-      "binding": {
-        "name": "authentication.base64Credentials",
         "type": "zeebe:input"
       },
       "type": "String"
