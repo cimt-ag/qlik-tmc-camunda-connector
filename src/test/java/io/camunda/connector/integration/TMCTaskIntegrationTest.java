@@ -65,7 +65,6 @@ public class TMCTaskIntegrationTest extends AbstractTMCConnectorTest {
                         null,
                         null,
                         null,
-                        null,
                         "wrong"),
                 endpoint,
                 new TMCPayload(Map.of(), Map.of())

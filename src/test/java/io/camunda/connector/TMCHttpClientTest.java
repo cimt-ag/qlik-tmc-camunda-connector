@@ -45,7 +45,6 @@ public class TMCHttpClientTest {
                 new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
                         null,
                         null,
-                        null,
                         "test-token")
         );
     }
@@ -151,7 +150,6 @@ public class TMCHttpClientTest {
                 new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
                         null,
                         null,
-                        null,
                         "token");
 
         String token = client.tmcAuthenticate(auth);
@@ -164,7 +162,6 @@ public class TMCHttpClientTest {
 
         TMCAuthentication auth =
                 new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
-                        null,
                         null,
                         null,
                         "token");
@@ -183,13 +180,11 @@ public class TMCHttpClientTest {
                 new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
                         null,
                         null,
-                        null,
                         "token");
 
         client.tmcAuthenticate(auth);
 
         String newToken = client.reauthenticate(new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
-                null,
                 null,
                 null,
                 "newToken"));
@@ -202,7 +197,6 @@ public class TMCHttpClientTest {
 
         TMCAuthentication auth =
                 new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
-                        null,
                         null,
                         null,
                         "token");

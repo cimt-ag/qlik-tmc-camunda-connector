@@ -6,7 +6,7 @@ import io.camunda.connector.api.processing.JobExecutionStatusV21;
 import io.camunda.connector.api.processing.TaskExecutionStatus;
 import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.exception.TMCConnectorException;
-import io.camunda.connector.exception.TMCConnectorFailedTaskException;
+import io.camunda.connector.exception.TMCTaskExecutionDetachException;
 import io.camunda.connector.exception.TMCConnectorProcessingException;
 import io.camunda.connector.model.TMCAuthentication;
 import io.camunda.connector.model.TMCEndpoint;
@@ -112,7 +112,8 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
      * tries to check the execution status
      *
      * @return the status of the finished Execution
-     * @throws TMCConnectorFailedTaskException if the connection to the TMC fails
+     * @throws TMCConnectionException          if the connection to the TMC fails
+     * @throws TMCTaskExecutionDetachException if the retry limit exceeds
      * @throws TMCConnectorProcessingException if the await for the offset or the period fails
      */
     private JobExecutionStatusV21 checkExecutionStatus(String executionId,
@@ -128,18 +129,13 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
             throw new TMCConnectorProcessingException(String.format("Error while awaiting offset: %s", e.getMessage()), e);
         }
 
-        JobExecutionStatusV21 result;
+        JobExecutionStatusV21 result = null;
         int i = 0;
 
-        do {
-            i++;
+        while (i <= limit) {
             LOGGER.debug("{} try checking status of the task execution", i);
 
-            result = new GetTaskExecutionStatusExecution()
-                    .args(executionId)
-                    .client(client)
-                    .request(request.createBasicRequest())
-                    .execute();
+            result = getExecutionStatus(executionId);
 
             if (result != null && isTaskExecutionDone(result.getExecutionStatus())) {
                 break;
@@ -148,29 +144,33 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
                     Thread.sleep(periodInMillis);
                 } catch (InterruptedException e) {
                     throw new TMCConnectorProcessingException(
-                            String.format("Error while awaiting finishing Task: %s", e.getMessage()), e);
+                            String.format(
+                                    "Error while awaiting of Task execution - %s: %s",
+                                    executionId,
+                                    e.getMessage()),
+                            e);
                 }
             }
-        } while (i <= limit);
+            i++;
+        }
 
         if (limit < i) {
             LOGGER.info("Retry Limits reached - detaching connector");
-            throw new TMCConnectorFailedTaskException("TMC Retry Limits reached - detaching connector");
-        } else if (taskExecutionFailed(result.getExecutionStatus())) {
-            LOGGER.info("Failed Task with Status {}", result.getExecutionStatus().getValue());
-            throw new TMCConnectorFailedTaskException(String.format("Failed Task with Status %s", result.getErrorMessage()));
-        } else {
-            LOGGER.info("Finished Task successful with Status {}", result.getExecutionStatus().getValue());
+            throw new TMCTaskExecutionDetachException(
+                    String.format("TMC Retry Limits reached - detaching connector from execution %s", executionId));
         }
+
+        LOGGER.info("Finished Task Execution {} successful with Status {}", executionId, result.getExecutionStatus().getValue());
 
         return result;
     }
 
-    private boolean canExecutionContinue(JobExecutionStatusV21.ExecutionStatusEnum executionStatus) {
-        return switch (executionStatus) {
-            case EXECUTION_REJECTED, DEPLOY_FAILED -> false;
-            default -> true;
-        };
+    private JobExecutionStatusV21 getExecutionStatus(String executionId) throws TMCConnectorException {
+        return new GetTaskExecutionStatusExecution()
+                .args(executionId)
+                .client(client)
+                .request(request.createBasicRequest())
+                .execute();
     }
 
     private boolean isTaskExecutionDone(JobExecutionStatusV21.ExecutionStatusEnum executionStatus) {
@@ -180,7 +180,4 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
         };
     }
 
-    private boolean taskExecutionFailed(JobExecutionStatusV21.ExecutionStatusEnum executionStatus) {
-        return JobExecutionStatusV21.ExecutionStatusEnum.EXECUTION_SUCCESS != executionStatus;
-    }
 }

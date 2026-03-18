@@ -207,6 +207,7 @@ You can use the execution result to check if the execution was successful or not
 ![Output Mapping Example](documentation/get_task_execution_status_output_mapping_example.png)
 
 Use a FEEL expression to check if the execution was successful in a Gateway:
+
 ````FEEL
 executionStatus = "EXECUTION_SUCCESS"
 ````
@@ -215,13 +216,13 @@ Check the [API documentation](https://talend.qlik.dev/apis/processing/2021-03/#t
 
 #### Error
 
-| Error Code                     | Description / Cause                                                                                 |
-|--------------------------------|-----------------------------------------------------------------------------------------------------|
-| TASK_EXECUTION_FAILED          | The Task execution was not successful or detaching the monitoring due to exceeding the retry limit  |
-| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code                                  |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                                                        |
-| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                                                       |
-| TMC_TECHNICAL_ERROR            | technical error                                                                                     |
+| Error Code                     | Description / Cause                                                |
+|--------------------------------|--------------------------------------------------------------------|
+| TASK_EXECUTION_DISCONNECTED    | Detaching the monitoring due to exceeding the retry limit          |
+| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code |
+| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                       |
+| TMC_CONNECTOR_PROCESSING_ERROR | technical error while processing tmc response                      |
+| TMC_TECHNICAL_ERROR            | technical error                                                    |
 
 ### Get Task Execution Status
 

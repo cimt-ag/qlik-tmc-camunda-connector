@@ -16,7 +16,6 @@ public class AbstractTMCConnectorTest {
                         TMCAuthenticationType.BEARER_TOKEN.getValue(),
                         null,
                         null,
-                        null,
                         personalAccessToken);
 
         this.endpoint = new TMCEndpoint(TASK_IDENTIFIER, TMCRegionToEndpoint.Europe.getName());
