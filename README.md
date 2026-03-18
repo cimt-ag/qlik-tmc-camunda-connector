@@ -1,6 +1,24 @@
 # qlik-tmc-camunda-connector
-The Qlik TMC Camunda Connector is a camunda connector to orchestrate the job execution within the Talend Management Cloud.
-Therefor we combine the best of the two worlds - data pipelines with process orchestration.
+The Qlik TMC Camunda Connector enables the orchestration of data integration tasks in the Talend Management Cloud (TMC) directly from Camunda processes.
+
+By combining **data pipeline execution** with **process orchestration**, this connector allows you to seamlessly integrate data workflows into your business processes. Tasks defined in TMC can be discovered, executed, monitored, and controlled within a Camunda BPMN model.
+
+This enables use cases such as:
+- orchestrating data pipelines as part of business processes
+- automating data integration workflows
+- monitoring and reacting to task execution results
+- handling errors and triggering follow-up actions based on execution status
+
+The connector abstracts the complexity of the TMC APIs and provides a simplified, operation-based interface that can be configured directly within Camunda service tasks.
+
+Each operation corresponds to a specific TMC API capability (e.g., retrieving tasks, executing tasks, monitoring executions), allowing process modelers to build powerful integrations without dealing with low-level API details.
+
+This approach combines the strengths of both platforms:
+
+- **Talend Management Cloud** for data integration and pipeline execution
+- **Camunda** for workflow orchestration and process automation
+
+Together, they enable robust, event-driven, and scalable data-driven process automation.
 
 ## Authentication
 
