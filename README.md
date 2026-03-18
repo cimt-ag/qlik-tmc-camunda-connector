@@ -34,6 +34,8 @@ This means authentication is performed only once per connector execution.
 The Bearer Token authentication method uses a bearer Token to authenticate TMC requests. 
 This method allows to authenticate requests using a personal access token.
 
+![Authentication Methode Bearer Token](documentation/AUTHENTICATION_METHOD_BEARER.png)
+
 Follow this guide to create your own personal access token: [Generating a Personal Access Token](https://help.qlik.com/talend/en-US/management-console-with-pipeline-designer/Cloud/cloud-access-token)
 
 Using a personal access token within the bearer token authentication flow means Task executions are performed under the user account associated with the token.
