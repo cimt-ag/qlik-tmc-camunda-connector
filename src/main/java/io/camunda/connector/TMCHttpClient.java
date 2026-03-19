@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.camunda.connector.exception.TMCConnectionException;
-import io.camunda.connector.exception.TMCConnectorProcessingException;
+import io.camunda.connector.exception.TMCConnectionArgumentException;
 import io.camunda.connector.exception.TMCErrorResponseException;
 import io.camunda.connector.model.TMCAuthentication;
 import io.camunda.connector.model.TMCAuthenticationType;
@@ -73,12 +73,12 @@ public class TMCHttpClient {
      * @param responseType class definition of the return type
      * @param <T>          class of the return type
      * @return the response of the GET request mapped to the {@param responseType}
-     * @throws TMCConnectorProcessingException if an error occurs handling the response
+     * @throws TMCConnectionArgumentException if an error occurs handling the response
      * @throws TMCConnectionException          if an error occurs while sending the GET request
      * @throws TMCErrorResponseException       if the tmc answers with an error HTTP status code
      */
     public <T> T sendTMCGetRequest(URI uri, Class<T> responseType)
-            throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
+            throws TMCConnectionArgumentException, TMCConnectionException, TMCErrorResponseException {
         return sendTMCRequest(
                 HttpRequest.newBuilder()
                         .uri(uri)
@@ -102,19 +102,19 @@ public class TMCHttpClient {
      * @param responseType class definition of the return type
      * @param <T>          class of the return type
      * @return the response of the POST request mapped to the {@param responseType}
-     * @throws TMCConnectorProcessingException if an error occurs handling the response
+     * @throws TMCConnectionArgumentException if an error occurs handling the response
      * @throws TMCConnectionException          if an error occurs while sending the POST request
      * @throws TMCErrorResponseException       if the tmc answers with an error HTTP status code
      */
     public <T> T sendTMCPostRequest(URI uri, Map<String, Object> payload, Class<T> responseType)
-            throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
+            throws TMCConnectionArgumentException, TMCConnectionException, TMCErrorResponseException {
         String requestBody;
 
         try {
             requestBody = mapper.writeValueAsString(payload);
         } catch (JsonProcessingException e) {
             LOGGER.error("Error parsing body variables from connector input: {}", e.getMessage());
-            throw new TMCConnectorProcessingException(e.getMessage());
+            throw new TMCConnectionArgumentException(e.getMessage());
         }
 
         return sendTMCRequest(
@@ -136,12 +136,12 @@ public class TMCHttpClient {
      * This method expects an uri for the request. You can use {@link #createUri(TMCEndpoint, Map, String)} to create the uri.
      *
      * @param uri Path to use for the request
-     * @throws TMCConnectorProcessingException if an error occurs handling the response
+     * @throws TMCConnectionArgumentException if an error occurs handling the response
      * @throws TMCConnectionException          if an error occurs while sending the DELETE request
      * @throws TMCErrorResponseException       if the tmc answers with an error HTTP status code
      */
     public void sendTMCDeleteRequest(URI uri)
-            throws TMCConnectionException, TMCConnectorProcessingException, TMCErrorResponseException {
+            throws TMCConnectionException, TMCConnectionArgumentException, TMCErrorResponseException {
         sendTMCRequest(
                 HttpRequest.newBuilder()
                         .uri(uri)
@@ -154,7 +154,7 @@ public class TMCHttpClient {
     }
 
     private <T> T sendTMCRequest(HttpRequest tmcRequest, Class<T> clazz)
-            throws TMCConnectorProcessingException, TMCConnectionException, TMCErrorResponseException {
+            throws TMCConnectionArgumentException, TMCConnectionException, TMCErrorResponseException {
         final HttpResponse<String> response;
 
         try {
@@ -178,16 +178,19 @@ public class TMCHttpClient {
             return mapper.readValue(response.body(), clazz);
         } catch (JsonMappingException e) {
             LOGGER.error("Error mapping TMC response: {}", e.getMessage());
-            throw new TMCConnectorProcessingException("Error parsing TMC response", e);
+            throw new TMCConnectionException("Error parsing TMC response", e);
         } catch (JsonProcessingException e) {
             LOGGER.error("Error processing TMC response: {}", e.getMessage());
-            throw new TMCConnectorProcessingException("Error parsing TMC response", e);
+            throw new TMCConnectionException("Error parsing TMC response", e);
         }
     }
 
-    private void validateResponse(HttpResponse<String> response) throws TMCErrorResponseException {
+    private void validateResponse(HttpResponse<String> response) throws TMCErrorResponseException, TMCConnectionArgumentException {
         final int responseCode = response.statusCode();
 
+        if (responseCode >= 400 &&  responseCode < 500) {
+            throw new TMCConnectionArgumentException(String.format("Invalid Arguments for request - Status code %s: %s", response.statusCode(), response.body()));
+        }
         if (responseCode != 200 && responseCode != 201 && responseCode != 204) {
             throw new TMCErrorResponseException(String.format("TMC request exited with status Code %s: %s", response.statusCode(), response.body()));
         }

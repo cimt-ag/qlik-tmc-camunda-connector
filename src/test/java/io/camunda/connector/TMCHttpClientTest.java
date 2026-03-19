@@ -1,6 +1,7 @@
 package io.camunda.connector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.camunda.connector.exception.TMCConnectionArgumentException;
 import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.exception.TMCErrorResponseException;
 import io.camunda.connector.model.TMCAuthentication;
@@ -230,6 +231,22 @@ public class TMCHttpClientTest {
 
         var result = TMCHttpClient.createUri(endpoint, queryParameter, "/path");
         assertEquals(TMCRegionToEndpoint.Europe.getEndpoint()+"/path?un+sanitized=true", result.toString());
+    }
+
+    @Test
+    public void TMC400StatusCode() throws Exception {
+        authenticate();
+
+        when(httpResponse.statusCode()).thenReturn(400);
+        when(httpResponse.body()).thenReturn("server error");
+
+        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(httpResponse);
+
+        assertThrows(
+                TMCConnectionArgumentException.class,
+                () -> client.sendTMCGetRequest(new URI("https://test/api"), DummyResponse.class)
+        );
     }
 
 }

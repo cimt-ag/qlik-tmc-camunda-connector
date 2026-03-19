@@ -106,7 +106,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
         final String taskExecutionDisconnected = "TASK_EXECUTION_DISCONNECTED";
         final String tmcConnectionFailed = "TMC_CONNECTION_FAILED";
         final String tmcErrorResponse = "TMC_RESPONSE_ERROR";
-        final String tmcConnectorProcessingError = "TMC_CONNECTOR_PROCESSING_ERROR";
+        final String tmcInvalidArgumentsError = "TMC_INVALID_ARGUMENTS_ERROR";
         final String tmcTechnicalError = "TMC_TECHNICAL_ERROR";
 
         try {
@@ -117,8 +117,8 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
             throw buildException(e, tmcConnectionFailed);
         } catch (TMCErrorResponseException e) {
             throw buildException(e, tmcErrorResponse);
-        } catch (TMCConnectorProcessingException e) {
-            throw buildException(e, tmcConnectorProcessingError);
+        } catch (TMCConnectionArgumentException e) {
+            throw buildException(e, tmcInvalidArgumentsError);
         } catch (TMCConnectorException | RuntimeException e) {
             throw buildException(e, tmcTechnicalError);
         }

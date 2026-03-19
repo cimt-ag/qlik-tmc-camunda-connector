@@ -7,7 +7,7 @@ import io.camunda.connector.api.processing.TaskExecutionStatus;
 import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.exception.TMCConnectorException;
 import io.camunda.connector.exception.TMCTaskExecutionDetachException;
-import io.camunda.connector.exception.TMCConnectorProcessingException;
+import io.camunda.connector.exception.TMCConnectionArgumentException;
 import io.camunda.connector.model.TMCAuthentication;
 import io.camunda.connector.model.TMCEndpoint;
 import io.camunda.connector.model.TMCPayload;
@@ -114,7 +114,7 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
      * @return the status of the finished Execution
      * @throws TMCConnectionException          if the connection to the TMC fails
      * @throws TMCTaskExecutionDetachException if the retry limit exceeds
-     * @throws TMCConnectorProcessingException if the await for the offset or the period fails
+     * @throws TMCConnectionArgumentException if the await for the offset or the period fails
      */
     private JobExecutionStatusV21 checkExecutionStatus(String executionId,
                                                        Integer offsetInMillis,
@@ -126,7 +126,7 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
             LOGGER.debug("Wait for {} seconds to check for task execution status", offsetInMillis);
             Thread.sleep(offsetInMillis);
         } catch (InterruptedException e) {
-            throw new TMCConnectorProcessingException(String.format("Error while awaiting offset: %s", e.getMessage()), e);
+            throw new TMCConnectionArgumentException(String.format("Error while awaiting offset: %s", e.getMessage()), e);
         }
 
         JobExecutionStatusV21 result = null;
@@ -143,7 +143,7 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
                 try {
                     Thread.sleep(periodInMillis);
                 } catch (InterruptedException e) {
-                    throw new TMCConnectorProcessingException(
+                    throw new TMCConnectionArgumentException(
                             String.format(
                                     "Error while awaiting of Task execution - %s: %s",
                                     executionId,

@@ -4,7 +4,7 @@ import io.camunda.connector.AbstractTMCConnectorTest;
 import io.camunda.connector.TMCHttpClient;
 import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.exception.TMCConnectorException;
-import io.camunda.connector.exception.TMCConnectorProcessingException;
+import io.camunda.connector.exception.TMCConnectionArgumentException;
 import io.camunda.connector.exception.TMCErrorResponseException;
 
 import java.util.Arrays;
@@ -22,7 +22,7 @@ public abstract class AbstractTMCConnectorExecutionTest extends AbstractTMCConne
 
     final List<TMCConnectorException> exceptions = Arrays.asList(
             new TMCConnectionException(),
-            new TMCConnectorProcessingException(""),
+            new TMCConnectionArgumentException(""),
             new TMCErrorResponseException(""));
 
     protected <T, P> void testTMCGetRequestsExceptionHandling(TMCConnectorExecution<T, P> execution) throws TMCConnectorException {
