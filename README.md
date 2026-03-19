@@ -102,14 +102,14 @@ All parameters are optional and correspond directly to the parameters of the TMC
 ````json
 {
   "environmentId": "string (optional)",
+  "name": "string - (optional)",
+  "artifactId": "string - (optional)",
   "offset": "integer - (optional)",
   "runtimeRunProfileId": "string - (optional)",
   "runtimeType": "string Enum (optional)",
   "workspaceId": "string (optional)",
-  "name": "string - (optional)",
   "limit": "integer - (optional)",
-  "runtimeId": "string - (optional)",
-  "artifactId": "string - (optional)"
+  "runtimeId": "string - (optional)"
 }
 ````
 
