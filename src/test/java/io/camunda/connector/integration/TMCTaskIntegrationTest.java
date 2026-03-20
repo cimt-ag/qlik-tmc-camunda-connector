@@ -2,9 +2,9 @@ package io.camunda.connector.integration;
 
 import io.camunda.connector.AbstractTMCConnectorTest;
 import io.camunda.connector.TMCTaskConnector;
+import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.orchestration.TaskV21;
 import io.camunda.connector.api.processing.TaskExecutionsFilters;
-import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.model.TMCAuthentication;
 import io.camunda.connector.model.TMCPayload;
 import io.camunda.connector.model.TMCPayloadRequest;
@@ -103,7 +103,12 @@ public class TMCTaskIntegrationTest extends AbstractTMCConnectorTest {
     public void getErrorTaskExecutionStatus() {
         final String executionID = "wrong";
 
-        assertThrows(TMCConnectionException.class, () -> tmcTaskConnector.getTaskExecutionStatus(basicRequest, executionID));
+        try {
+            tmcTaskConnector.getTaskExecutionStatus(basicRequest, executionID);
+            fail("expected to throw a ConnectorException");
+        } catch (ConnectorException e) {
+            assertEquals("TMC_INVALID_ARGUMENTS_ERROR", e.getErrorCode());
+        }
     }
 
     @Test

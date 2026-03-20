@@ -22,9 +22,10 @@ public class GetAvailableTasksExecutionsExecutionTest extends AbstractTMCConnect
         when(mockClient.tmcAuthenticate(authentication)).thenReturn(AUTH_TOKEN_MOCK);
         when(mockClient.sendTMCPostRequest(any(), any(), eq(PageTaskExecutionStatus.class))).thenReturn(status);
 
-        var result = new GetAvailableTasksExecutionsExecution()
+        var result = new GetAvailableTasksExecutionsExecution.Builder()
                 .client(mockClient)
                 .request(createEmptyTMCPayloadRequest())
+                .build()
                 .execute();
 
         assertEquals(status, result);
@@ -33,7 +34,7 @@ public class GetAvailableTasksExecutionsExecutionTest extends AbstractTMCConnect
     @Test
     public void testTMCHttpClientExceptions() throws TMCConnectorException {
         testTMCPostRequestsExceptionHandling(
-                new GetAvailableTasksExecutionsExecution()
+                new GetAvailableTasksExecutionsExecution.Builder()
                         .request(createEmptyTMCPayloadRequest())
         );
     }

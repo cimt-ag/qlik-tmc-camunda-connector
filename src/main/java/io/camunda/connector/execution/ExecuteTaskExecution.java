@@ -4,10 +4,10 @@ import io.camunda.connector.TMCHttpClient;
 import io.camunda.connector.api.processing.Executionidentifier;
 import io.camunda.connector.api.processing.JobExecutionStatusV21;
 import io.camunda.connector.api.processing.TaskExecutionStatus;
+import io.camunda.connector.exception.TMCConnectionArgumentException;
 import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.exception.TMCConnectorException;
 import io.camunda.connector.exception.TMCTaskExecutionDetachException;
-import io.camunda.connector.exception.TMCConnectionArgumentException;
 import io.camunda.connector.model.TMCAuthentication;
 import io.camunda.connector.model.TMCEndpoint;
 import io.camunda.connector.model.TMCPayload;
@@ -29,13 +29,6 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
     private Integer period;
     private Integer offset;
     private Integer limit;
-
-    public ExecuteTaskExecution args(Integer period, Integer offset, Integer limit) {
-        this.period = period;
-        this.offset = offset;
-        this.limit = limit;
-        return this;
-    }
 
     @Override
     public JobExecutionStatusV21 execute() throws TMCConnectorException {
@@ -94,13 +87,14 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
             throw new IllegalArgumentException("Missing taskId - Please provide a task ID to execute the task");
         }
 
-        var lastExecutions = new GetTaskExecutionsExecution()
+        var lastExecutions = new GetTaskExecutionsExecution.Builder()
                 .args(taskId)
                 .client(client)
                 .request(new TMCPayloadRequest(
                         authentication,
                         endpoint,
                         TMCPayload.emptyPayload()))
+                .build()
                 .execute();
         return lastExecutions.getItems().stream()
                 .filter(item -> item.getStatus() == TaskExecutionStatus.StatusEnum.EXECUTING)
@@ -166,10 +160,11 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
     }
 
     private JobExecutionStatusV21 getExecutionStatus(String executionId) throws TMCConnectorException {
-        return new GetTaskExecutionStatusExecution()
+        return new GetTaskExecutionStatusExecution.Builder()
                 .args(executionId)
                 .client(client)
                 .request(request.createBasicRequest())
+                .build()
                 .execute();
     }
 
@@ -178,6 +173,33 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
             case EXECUTION_EVENT_RECEIVED, DISPATCHING_FLOW, STARTING_FLOW_EXECUTION, STOPPING_FLOW_EXECUTION -> false;
             default -> true;
         };
+    }
+
+    public static class Builder extends AbstractExecutionBuilder<JobExecutionStatusV21, TMCPayloadRequest> {
+
+        private Integer period = 60;
+        private Integer offset = 60;
+        private Integer limit = 100;
+
+        public Builder args(Integer period, Integer offset, Integer limit) {
+            this.period = period;
+            this.offset = offset;
+            this.limit = limit;
+            return this;
+        }
+
+        @Override
+        public TMCConnectorExecution<JobExecutionStatusV21> build() {
+            var execution = new ExecuteTaskExecution();
+
+            setParameter(execution);
+
+            execution.period = this.period;
+            execution.offset = this.offset;
+            execution.limit = this.limit;
+
+            return execution;
+        }
     }
 
 }

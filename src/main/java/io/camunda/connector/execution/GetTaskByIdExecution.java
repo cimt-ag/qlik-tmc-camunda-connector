@@ -40,4 +40,28 @@ public class GetTaskByIdExecution extends AbstractConnectorExecution<TaskV21, TM
 
         return result;
     }
+
+    public static class Builder extends AbstractExecutionBuilder<TaskV21, TMCBasicRequest> {
+        private String taskId;
+
+        public Builder args(String taskId) {
+            this.taskId = taskId;
+            return this;
+        }
+
+        @Override
+        public TMCConnectorExecution<TaskV21> build() {
+            var execution = new GetTaskByIdExecution();
+
+            setParameter(execution);
+
+            if (taskId == null || taskId.isEmpty()) {
+                throw new IllegalArgumentException("TaskId is required");
+            }
+
+            execution.taskId = taskId;
+
+            return execution;
+        }
+    }
 }

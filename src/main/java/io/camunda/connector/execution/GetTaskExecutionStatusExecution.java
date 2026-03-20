@@ -18,11 +18,6 @@ public class GetTaskExecutionStatusExecution extends AbstractConnectorExecution<
 
     private String executionId;
 
-    public GetTaskExecutionStatusExecution args(String executionId) {
-        this.executionId = executionId;
-        return this;
-    }
-
     @Override
     public JobExecutionStatusV21 execute() throws TMCConnectorException {
         LOGGER.info("Process: Get task execution status");
@@ -40,5 +35,30 @@ public class GetTaskExecutionStatusExecution extends AbstractConnectorExecution<
         LOGGER.debug("Task execution status result: {}", result);
 
         return result;
+    }
+
+    public static class Builder extends AbstractExecutionBuilder<JobExecutionStatusV21, TMCBasicRequest> {
+
+        String executionId;
+
+        public Builder args(String executionId) {
+            this.executionId = executionId;
+            return this;
+        }
+
+        @Override
+        public TMCConnectorExecution<JobExecutionStatusV21> build() {
+            var execution = new GetTaskExecutionStatusExecution();
+
+            setParameter(execution);
+
+            if (executionId == null || executionId.isEmpty()) {
+                throw new IllegalArgumentException("ExecutionId is required");
+            }
+
+            execution.executionId = executionId;
+
+            return execution;
+        }
     }
 }

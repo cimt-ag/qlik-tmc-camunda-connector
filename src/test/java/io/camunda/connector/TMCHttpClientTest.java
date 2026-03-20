@@ -28,7 +28,7 @@ public class TMCHttpClientTest {
     private TMCHttpClient client;
     private HttpClient httpClient;
     private HttpResponse<String> httpResponse;
-    private TMCEndpoint endpoint = new TMCEndpoint("Task", "europe");
+    private final TMCEndpoint endpoint = new TMCEndpoint("Task", "europe");
 
     static class DummyResponse {
         public String value;
@@ -230,7 +230,7 @@ public class TMCHttpClientTest {
         Map<String, Object> queryParameter = Map.of("un sanitized", true);
 
         var result = TMCHttpClient.createUri(endpoint, queryParameter, "/path");
-        assertEquals(TMCRegionToEndpoint.Europe.getEndpoint()+"/path?un+sanitized=true", result.toString());
+        assertEquals(TMCRegionToEndpoint.Europe.getEndpoint() + "/path?un+sanitized=true", result.toString());
     }
 
     @Test

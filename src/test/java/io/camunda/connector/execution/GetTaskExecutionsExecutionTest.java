@@ -31,10 +31,11 @@ public class GetTaskExecutionsExecutionTest extends AbstractTMCConnectorExecutio
         when(mockClient.tmcAuthenticate(authentication)).thenReturn(AUTH_TOKEN_MOCK);
         when(mockClient.sendTMCGetRequest(uri, PageTaskExecutionStatus.class)).thenReturn(status);
 
-        var result = new GetTaskExecutionsExecution()
+        var result = new GetTaskExecutionsExecution.Builder()
                 .args(taskId)
                 .client(mockClient)
                 .request(createEmptyTMCPayloadRequest())
+                .build()
                 .execute();
 
         assertEquals(status, result);
@@ -43,7 +44,8 @@ public class GetTaskExecutionsExecutionTest extends AbstractTMCConnectorExecutio
     @Test
     public void testTMCHttpClientExceptions() throws TMCConnectorException {
         testTMCGetRequestsExceptionHandling(
-                new GetTaskExecutionsExecution()
+                new GetTaskExecutionsExecution.Builder()
+                        .args("taskId")
                         .request(createEmptyTMCPayloadRequest())
         );
     }

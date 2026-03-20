@@ -39,4 +39,15 @@ public class GetAvailableTasksExecution extends AbstractConnectorExecution<PageT
         return result;
     }
 
+    public static class Builder extends AbstractExecutionBuilder<PageTask, TMCPayloadRequest> {
+        @Override
+        public TMCConnectorExecution<PageTask> build() {
+            var execution = new GetAvailableTasksExecution();
+
+            setParameter(execution);
+
+            return execution;
+        }
+    }
+
 }

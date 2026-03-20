@@ -17,11 +17,6 @@ public class TerminateTaskExecution extends AbstractConnectorExecution<Void, TMC
 
     private String executionId;
 
-    public TerminateTaskExecution args(String executionId) {
-        this.executionId = executionId;
-        return this;
-    }
-
     @Override
     public Void execute() throws TMCConnectorException {
         LOGGER.info("Process: Terminate Execution {}", executionId);
@@ -37,5 +32,30 @@ public class TerminateTaskExecution extends AbstractConnectorExecution<Void, TMC
         LOGGER.info("Completed: Terminate Tasks Execution");
 
         return null;
+    }
+
+    public static class Builder extends AbstractExecutionBuilder<Void, TMCBasicRequest> {
+
+        private String executionId;
+
+        public Builder args(String executionId) {
+            this.executionId = executionId;
+            return this;
+        }
+
+        @Override
+        public TMCConnectorExecution<Void> build() {
+            var execution = new TerminateTaskExecution();
+
+            setParameter(execution);
+
+            if (executionId == null || executionId.isEmpty()) {
+                throw new IllegalArgumentException("ExecutionId is required");
+            }
+
+            execution.executionId = executionId;
+
+            return execution;
+        }
     }
 }

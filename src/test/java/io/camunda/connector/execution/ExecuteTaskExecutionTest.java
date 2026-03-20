@@ -20,8 +20,7 @@ import static io.camunda.connector.TMCHttpClient.EXECUTION_STATUS_API;
 import static io.camunda.connector.TMCHttpClient.TASK_EXECUTIONS_API;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ExecuteTaskExecutionTest extends AbstractTMCConnectorExecutionTest {
 
@@ -68,7 +67,7 @@ public class ExecuteTaskExecutionTest extends AbstractTMCConnectorExecutionTest 
         when(mockClient.sendTMCGetRequest(uriGetTaskExecutionStatusExecution, JobExecutionStatusV21.class))
                 .thenReturn(resultStatus);
 
-        var result = new ExecuteTaskExecution()
+        var result = new ExecuteTaskExecution.Builder()
                 .args(period, offset, limit)
                 .client(mockClient)
                 .request(new TMCPayloadRequest(
@@ -76,7 +75,64 @@ public class ExecuteTaskExecutionTest extends AbstractTMCConnectorExecutionTest 
                         basicRequest.endpoint(),
                         new TMCPayload(Map.of(), body)
                 ))
+                .build()
                 .execute();
+
+        assertEquals(resultStatus, result);
+    }
+
+    @Test
+    public void testExecuteTaskAttachToExecution() throws TMCConnectorException {
+        final String executableId = "abc";
+        final String executionId = "executionId";
+
+        final URI uri = TMCHttpClient.createUri(basicRequest.endpoint(), Map.of(), TMCHttpClient.EXECUTE_TASK_API);
+
+        final Integer period = 1;
+        final Integer offset = 0;
+        final Integer limit = 5;
+
+        Map<String, Object> body = Map.of(ExecuteTaskExecution.EXECUTABLE_KEY, executableId);
+
+        // getCurrentExecution stubbing
+        final URI currentExecutionURI = TMCHttpClient.createUri(
+                basicRequest.endpoint(), Map.of(), TASK_EXECUTIONS_API.apply(executableId));
+        PageTaskExecutionStatus currentExecutionStatus = mock(PageTaskExecutionStatus.class);
+        TaskExecutionStatus itemStatus = mock(TaskExecutionStatus.class);
+        when(itemStatus.getExecutionId()).thenReturn(executionId);
+        when(itemStatus.getStatus()).thenReturn(TaskExecutionStatus.StatusEnum.EXECUTING);
+        when(currentExecutionStatus.getItems()).thenReturn(List.of(itemStatus));
+        when(mockClient.sendTMCGetRequest(currentExecutionURI, PageTaskExecutionStatus.class))
+                .thenReturn(currentExecutionStatus);
+
+        // GetTaskExecutionStatusExecution stubbing
+        final URI uriGetTaskExecutionStatusExecution = TMCHttpClient.createUri(
+                basicRequest.endpoint(),
+                Map.of(),
+                EXECUTION_STATUS_API.apply(executionId));
+        final JobExecutionStatusV21 resultStatus = mock(JobExecutionStatusV21.class);
+        when(resultStatus.getExecutionStatus()).thenReturn(JobExecutionStatusV21.ExecutionStatusEnum.EXECUTION_SUCCESS);
+        when(mockClient.sendTMCGetRequest(uriGetTaskExecutionStatusExecution, JobExecutionStatusV21.class))
+                .thenReturn(resultStatus);
+
+        // execute
+        var result = new ExecuteTaskExecution.Builder()
+                .args(period, offset, limit)
+                .client(mockClient)
+                .request(new TMCPayloadRequest(
+                        basicRequest.authentication(),
+                        basicRequest.endpoint(),
+                        new TMCPayload(Map.of(), body)
+                ))
+                .build()
+                .execute();
+
+        // verify no task execution happened
+        Executionidentifier executionidentifier = mock(Executionidentifier.class);
+        when(executionidentifier.getExecutionId()).thenReturn(executionId);
+        when(mockClient.tmcAuthenticate(authentication)).thenReturn(AUTH_TOKEN_MOCK);
+        when(mockClient.sendTMCPostRequest(uri, body, Executionidentifier.class)).thenReturn(executionidentifier);
+        verify(mockClient, never()).sendTMCPostRequest(uri, body, Executionidentifier.class);
 
         assertEquals(resultStatus, result);
     }
@@ -104,7 +160,7 @@ public class ExecuteTaskExecutionTest extends AbstractTMCConnectorExecutionTest 
                 basicRequest.endpoint(), Map.of(), TASK_EXECUTIONS_API.apply(executableId));
         PageTaskExecutionStatus currentExecutionStatus = mock(PageTaskExecutionStatus.class);
         TaskExecutionStatus itemStatus = mock(TaskExecutionStatus.class);
-        when(itemStatus.getStatus()).thenReturn(TaskExecutionStatus.StatusEnum.EXECUTING);
+        when(itemStatus.getStatus()).thenReturn(TaskExecutionStatus.StatusEnum.EXECUTION_SUCCESSFUL);
         when(currentExecutionStatus.getItems()).thenReturn(List.of(itemStatus));
         when(mockClient.sendTMCGetRequest(currentExecutionURI, PageTaskExecutionStatus.class))
                 .thenReturn(currentExecutionStatus, currentExecutionStatus);
@@ -115,19 +171,19 @@ public class ExecuteTaskExecutionTest extends AbstractTMCConnectorExecutionTest 
                 Map.of(),
                 EXECUTION_STATUS_API.apply(executionId));
         final JobExecutionStatusV21 resultStatus = mock(JobExecutionStatusV21.class);
-        when(resultStatus.getExecutionStatus()).thenReturn(JobExecutionStatusV21.ExecutionStatusEnum.EXECUTION_SUCCESS);
+        when(resultStatus.getExecutionStatus()).thenReturn(JobExecutionStatusV21.ExecutionStatusEnum.EXECUTION_EVENT_RECEIVED);
         when(mockClient.sendTMCGetRequest(uriGetTaskExecutionStatusExecution, JobExecutionStatusV21.class))
                 .thenReturn(resultStatus);
 
 
-        var execution = new ExecuteTaskExecution()
+        var execution = new ExecuteTaskExecution.Builder()
                 .args(period, offset, limit)
                 .client(mockClient)
                 .request(new TMCPayloadRequest(
                         basicRequest.authentication(),
                         basicRequest.endpoint(),
                         new TMCPayload(Map.of(), body)
-                ));
+                )).build();
 
         assertThrows(TMCTaskExecutionDetachException.class, execution::execute);
     }

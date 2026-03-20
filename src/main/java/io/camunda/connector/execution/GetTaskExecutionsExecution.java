@@ -18,11 +18,6 @@ public class GetTaskExecutionsExecution extends AbstractConnectorExecution<PageT
 
     private String taskId;
 
-    public GetTaskExecutionsExecution args(String taskId) {
-        this.taskId = taskId;
-        return this;
-    }
-
     @Override
     public PageTaskExecutionStatus execute() throws TMCConnectorException {
         LOGGER.info("Process: Get task execution");
@@ -45,5 +40,30 @@ public class GetTaskExecutionsExecution extends AbstractConnectorExecution<PageT
         LOGGER.debug("Task execution result: {}", result);
 
         return result;
+    }
+
+    public static class Builder extends AbstractExecutionBuilder<PageTaskExecutionStatus, TMCPayloadRequest> {
+
+        private String taskId;
+
+        public Builder args(String taskId) {
+            this.taskId = taskId;
+            return this;
+        }
+
+        @Override
+        public TMCConnectorExecution<PageTaskExecutionStatus> build() {
+            var execution = new GetTaskExecutionsExecution();
+
+            setParameter(execution);
+
+            if (taskId == null || taskId.isEmpty()) {
+                throw new IllegalArgumentException("TaskId is required");
+            }
+
+            execution.taskId = taskId;
+
+            return execution;
+        }
     }
 }

@@ -27,14 +27,12 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TMCTaskConnector.class);
 
-    private final TMCHttpClient client = new TMCHttpClient();
-
     @Operation(id = "getTasks", name = "get available tasks")
     public PageTask getAvailableTasks(@Variable TMCPayloadRequest request) {
         LOGGER.info("Get available tasks request");
-        return execute(new GetAvailableTasksExecution()
-                .client(client)
-                .request(request));
+        return execute(new GetAvailableTasksExecution.Builder()
+                .request(request)
+                .build());
     }
 
     @Operation(id = "executeTask", name = "Execute Task")
@@ -44,10 +42,10 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
                                              @Variable(name = "limit", value = "100") Integer limit
     ) {
         LOGGER.info("Execute Task request");
-        return execute(new ExecuteTaskExecution()
+        return execute(new ExecuteTaskExecution.Builder()
                 .args(period, offset, limit)
-                .client(client)
                 .request(request)
+                .build()
         );
     }
 
@@ -56,19 +54,19 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
                                                         @Variable(name = "getTaskExecutionStatus_executionId") String executionId
     ) {
         LOGGER.info("Get Task Execution Status request");
-        return execute(new GetTaskExecutionStatusExecution()
+        return execute(new GetTaskExecutionStatusExecution.Builder()
                 .args(executionId)
-                .client(client)
                 .request(request)
+                .build()
         );
     }
 
     @Operation(id = "getAvailableTasksExecutions", name = "Get available Tasks Executions")
     public PageTaskExecutionStatus getAvailableTasksExecutions(@Variable TMCPayloadRequest request) {
         LOGGER.info("Get Available Tasks Executions request");
-        return execute(new GetAvailableTasksExecutionsExecution()
-                .client(client)
+        return execute(new GetAvailableTasksExecutionsExecution.Builder()
                 .request(request)
+                .build()
         );
     }
 
@@ -76,33 +74,33 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
     public PageTaskExecutionStatus getTaskExecutions(@Variable TMCPayloadRequest request,
                                                      @Variable(name = "getTaskExecutions_taskId") String taskId) {
         LOGGER.info("Get Task Executions request");
-        return execute(new GetTaskExecutionsExecution()
+        return execute(new GetTaskExecutionsExecution.Builder()
                 .args(taskId)
-                .client(client)
-                .request(request));
+                .request(request)
+                .build());
     }
 
     @Operation(id = "getTaskById", name = "Get Task by ID")
     public TaskV21 getTaskById(@Variable TMCBasicRequest request,
                                @Variable(name = "getTaskById_taskId") String taskId) {
         LOGGER.info("Get Task by id request");
-        return execute(new GetTaskByIdExecution()
+        return execute(new GetTaskByIdExecution.Builder()
                 .args(taskId)
-                .client(client)
-                .request(request));
+                .request(request)
+                .build());
     }
 
     @Operation(id = "terminateTaskExecution", name = "Terminate Task Execution")
     public void terminateTaskExecution(@Variable TMCBasicRequest request,
                                        @Variable(name = "terminateTaskExecution_executionId") String executionId) {
         LOGGER.info("Terminate Task Execution request");
-        execute(new TerminateTaskExecution()
+        execute(new TerminateTaskExecution.Builder()
                 .args(executionId)
-                .client(client)
-                .request(request));
+                .request(request)
+                .build());
     }
 
-    private <T> T execute(TMCConnectorExecution<T, ?> execution) throws ConnectorException {
+    private <T> T execute(TMCConnectorExecution<T> execution) throws ConnectorException {
         final String taskExecutionDisconnected = "TASK_EXECUTION_DISCONNECTED";
         final String tmcConnectionFailed = "TMC_CONNECTION_FAILED";
         final String tmcErrorResponse = "TMC_RESPONSE_ERROR";
