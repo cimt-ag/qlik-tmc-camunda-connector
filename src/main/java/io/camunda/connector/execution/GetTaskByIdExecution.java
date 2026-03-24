@@ -26,7 +26,7 @@ public class GetTaskByIdExecution extends AbstractConnectorExecution<TaskV21, TM
     @Override
     public TaskV21 execute() throws TMCConnectorException {
         LOGGER.info("Process: Get task by Id");
-        client.tmcAuthenticate(request.authentication());
+        processAuthenticate(request);
 
         final URI uri = TMCHttpClient.createUri(
                 request.endpoint(),

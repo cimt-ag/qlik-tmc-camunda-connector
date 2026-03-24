@@ -6,7 +6,6 @@ import io.camunda.connector.exception.TMCConnectionArgumentException;
 import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.exception.TMCConnectorException;
 import io.camunda.connector.exception.TMCErrorResponseException;
-import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;

@@ -25,7 +25,7 @@ public class GetAvailableTasksExecution extends AbstractConnectorExecution<PageT
             queryParams = request.payload().queryParameters();
         }
 
-        client.tmcAuthenticate(request.authentication());
+        processAuthenticate(request);
         final URI uri = TMCHttpClient.createUri(
                 request.endpoint(),
                 queryParams,

@@ -1,10 +1,11 @@
 package io.camunda.connector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.camunda.connector.api.oauth.TokenResponse;
+import io.camunda.connector.exception.TMCAuthenticationException;
 import io.camunda.connector.exception.TMCConnectionArgumentException;
 import io.camunda.connector.exception.TMCConnectionException;
 import io.camunda.connector.exception.TMCErrorResponseException;
-import io.camunda.connector.model.TMCAuthentication;
 import io.camunda.connector.model.TMCAuthenticationType;
 import io.camunda.connector.model.TMCEndpoint;
 import io.camunda.connector.model.TMCRegionToEndpoint;
@@ -20,8 +21,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class TMCHttpClientTest {
 
@@ -30,8 +30,20 @@ public class TMCHttpClientTest {
     private HttpResponse<String> httpResponse;
     private final TMCEndpoint endpoint = new TMCEndpoint("Task", "europe");
 
+    TMCHttpAuthentication authBearer =
+            new TMCHttpAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
+                    null,
+                    null,
+                    "token",
+                    TMCRegionToEndpoint.Europe.getEndpoint());
+
     static class DummyResponse {
         public String value;
+
+    }
+
+    private void authenticate() throws Exception {
+        client.tmcAuthenticate(authBearer);
     }
 
     @BeforeEach
@@ -41,20 +53,9 @@ public class TMCHttpClientTest {
         client = new TMCHttpClient(httpClient);
     }
 
-    private void authenticate() {
-        client.tmcAuthenticate(
-                new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
-                        null,
-                        null,
-                        "test-token")
-        );
-    }
-
     @Test
     public void sendTMCGetRequest_success() throws Exception {
-
         authenticate();
-
         DummyResponse dummy = new DummyResponse();
         dummy.value = "ok";
 
@@ -74,7 +75,6 @@ public class TMCHttpClientTest {
 
     @Test
     public void sendTMCPostRequest_success() throws Exception {
-
         authenticate();
 
         DummyResponse dummy = new DummyResponse();
@@ -99,7 +99,6 @@ public class TMCHttpClientTest {
 
     @Test
     public void sendTMCDeleteRequest_success() throws Exception {
-
         authenticate();
 
         when(httpResponse.statusCode()).thenReturn(204);
@@ -114,7 +113,6 @@ public class TMCHttpClientTest {
 
     @Test
     public void sendTMCRequest_errorResponse() throws Exception {
-
         authenticate();
 
         when(httpResponse.statusCode()).thenReturn(500);
@@ -132,7 +130,6 @@ public class TMCHttpClientTest {
 
     @Test
     public void sendTMCRequest_connectionError() throws Exception {
-
         authenticate();
 
         when(httpClient.send(any(HttpRequest.class), any()))
@@ -145,68 +142,39 @@ public class TMCHttpClientTest {
     }
 
     @Test
-    public void tmcAuthenticate_bearerToken() {
-
-        TMCAuthentication auth =
-                new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
-                        null,
-                        null,
-                        "token");
-
-        String token = client.tmcAuthenticate(auth);
+    public void tmcAuthenticate_bearerToken() throws Exception {
+        String token = client.tmcAuthenticate(this.authBearer);
 
         assertEquals("token", token);
     }
 
     @Test
-    public void tmcAuthenticate_reuseToken() {
-
-        TMCAuthentication auth =
-                new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
-                        null,
-                        null,
-                        "token");
-
-        client.tmcAuthenticate(auth);
-
-        String reused = client.tmcAuthenticate(auth);
+    public void tmcAuthenticate_reuseToken() throws Exception {
+        authenticate();
+        String reused = client.tmcAuthenticate(authBearer);
 
         assertEquals("token", reused);
     }
 
     @Test
-    public void reauthenticate_shouldResetToken() {
+    public void reauthenticate_shouldResetToken() throws Exception {
+        authenticate();
 
-        TMCAuthentication auth =
-                new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
-                        null,
-                        null,
-                        "token");
-
-        client.tmcAuthenticate(auth);
-
-        String newToken = client.reauthenticate(new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
+        String newToken = client.reauthenticate(new TMCHttpAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
                 null,
                 null,
-                "newToken"));
+                "newToken",
+                TMCRegionToEndpoint.Europe.getEndpoint()));
 
         assertEquals("newToken", newToken);
     }
 
     @Test
-    public void invalidateAuthToken_shouldClearToken() {
-
-        TMCAuthentication auth =
-                new TMCAuthentication(TMCAuthenticationType.BEARER_TOKEN.getValue(),
-                        null,
-                        null,
-                        "token");
-
-        client.tmcAuthenticate(auth);
-
+    public void invalidateAuthToken_shouldClearToken() throws Exception {
+        authenticate();
         client.invalidateAuthToken();
 
-        String newToken = client.tmcAuthenticate(auth);
+        String newToken = client.tmcAuthenticate(authBearer);
 
         assertEquals("token", newToken);
     }
@@ -247,6 +215,102 @@ public class TMCHttpClientTest {
                 TMCConnectionArgumentException.class,
                 () -> client.sendTMCGetRequest(new URI("https://test/api"), DummyResponse.class)
         );
+    }
+
+    @Test
+    public void TMCServiceAccountCredentialSetFlow() throws Exception {
+
+        final String token = "token";
+
+        TokenResponse response = new TokenResponse();
+        response.setAccessToken(token);
+        response.expiresIn("100");
+
+        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(httpResponse);
+
+        when(httpResponse.body()).thenReturn(new ObjectMapper().writeValueAsString(response));
+        when(httpResponse.statusCode()).thenReturn(200);
+
+        TMCHttpAuthentication serviceAccountAuth = new TMCHttpAuthentication(
+                TMCAuthenticationType.CREDENTIALS_SET.getValue(),
+                "client-id",
+                "secret",
+                null,
+                TMCRegionToEndpoint.Europe.getEndpoint()
+        );
+
+        String result = client.tmcAuthenticate(serviceAccountAuth);
+
+        //reuse token
+        String reuse = client.tmcAuthenticate(serviceAccountAuth);
+
+        assertEquals(token, result);
+        assertEquals(token, reuse);
+
+        verify(httpClient, times(1)).send(any(HttpRequest.class),
+                any(HttpResponse.BodyHandler.class));
+    }
+
+    @Test
+    public void TMCServiceAccountExpiredCredentialSetFlow() throws Exception {
+
+        final String token = "token";
+
+        TokenResponse response = new TokenResponse();
+        response.setAccessToken(token);
+        response.expiresIn("0");
+
+        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(httpResponse);
+
+        when(httpResponse.body()).thenReturn(new ObjectMapper().writeValueAsString(response));
+        when(httpResponse.statusCode()).thenReturn(200);
+
+        TMCHttpAuthentication serviceAccountAuth = new TMCHttpAuthentication(
+                TMCAuthenticationType.CREDENTIALS_SET.getValue(),
+                "client-id",
+                "secret",
+                null,
+                TMCRegionToEndpoint.Europe.getEndpoint()
+        );
+
+        String result = client.tmcAuthenticate(serviceAccountAuth);
+
+        //reuse token
+        String reuse = client.tmcAuthenticate(serviceAccountAuth);
+
+        assertEquals(token, result);
+        assertEquals(token, reuse);
+
+        verify(httpClient, times(2)).send(any(HttpRequest.class),
+                any(HttpResponse.BodyHandler.class));
+    }
+
+    @Test
+    public void TMCServiceAccountCredentialSetFlowUnauthorized() throws Exception {
+
+        final String token = "token";
+
+        TokenResponse response = new TokenResponse();
+        response.setAccessToken(token);
+        response.expiresIn("0");
+
+        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(httpResponse);
+
+        when(httpResponse.body()).thenReturn(new ObjectMapper().writeValueAsString(response));
+        when(httpResponse.statusCode()).thenReturn(401);
+
+        TMCHttpAuthentication serviceAccountAuth = new TMCHttpAuthentication(
+                TMCAuthenticationType.CREDENTIALS_SET.getValue(),
+                "client-id",
+                "secret",
+                null,
+                TMCRegionToEndpoint.Europe.getEndpoint()
+        );
+
+        assertThrows(TMCAuthenticationException.class, () -> client.tmcAuthenticate(serviceAccountAuth));
     }
 
 }

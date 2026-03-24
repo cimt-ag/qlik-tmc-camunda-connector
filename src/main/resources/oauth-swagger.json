@@ -1,0 +1,126 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "With service accounts, you are enabled to use the OAuth2 Client Credentials Flow for accessing Talend Cloud APIs.\nThis service account specific token is more secure than the personal access tokens typically used by a user.   \nIt is recommended to use service accounts along with their access tokens to issue API calls, when a specific user does not need to be involved in these calls.",
+    "version": "2021-03",
+    "title": "OAuth",
+    "contact": {}
+  },
+  "host": "api.eu.cloud.talend.com",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "security": [
+    {
+      "Public": []
+    }
+  ],
+  "paths": {
+    "/security/oauth/token": {
+      "post": {
+        "summary": "Get JWT token",
+        "description": "Use the service account credentials to get an OAuth2 JWT access token through the Client Credentials Grant flow.  \nRequired permission to use this endpoint: **Service Account - Manage**. The ID of this permission is `TMC_SERVICE_ACCOUNT_MANAGEMENT`.",
+        "consumes": [],
+        "parameters": [
+          {
+            "name": "talendVersion",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "API version"
+          },
+          {
+            "name": "talend-version",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "description": "API version"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TokenRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token is generated successfully",
+            "schema": {
+              "$ref": "#/definitions/TokenResponse"
+            }
+          },
+          "401": {
+            "description": "The ClientId or Secret is missing or invalid"
+          },
+          "403": {
+            "description": "The account provided does not have the required permissions"
+          },
+          "500": {
+            "description": "500 - Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Public": {
+      "type": "basic"
+    }
+  },
+  "definitions": {
+    "TokenRequest": {
+      "type": "object",
+      "required": [
+        "audience",
+        "grant_type"
+      ],
+      "properties": {
+        "grant_type": {
+          "type": "string",
+          "description": "The OAuth 2 flow that must be used to obtain an access token. The value must be set to \"client_credentials\".",
+          "example": "client_credentials"
+        },
+        "audience": {
+          "type": "string",
+          "description": "The unique identifier of the target API to access",
+          "example": "https://api.eu.cloud.talend.com/"
+        }
+      },
+      "description": "A token request is an object used to obtain an access token through the OAuth 2 Client Credentials Grant flow."
+    },
+    "TokenResponse": {
+      "type": "object",
+      "required": [
+        "access_token",
+        "token_type"
+      ],
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "description": "The access token obtained in JWT format.",
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        },
+        "token_type": {
+          "type": "string",
+          "description": "The type of the token issued as described in the OAuth 2 specification. The value is usually \"Bearer\".",
+          "example": "Bearer"
+        },
+        "expires_in": {
+          "type": "string",
+          "description": "The lifetime in seconds of the access token. For example, the value 3600 denotes that the access token expires at the end of one hour from the time the response is generated.",
+          "example": "3600"
+        }
+      },
+      "description": "Access token is returned in this response."
+    }
+  }
+}

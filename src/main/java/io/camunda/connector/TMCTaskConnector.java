@@ -106,6 +106,7 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
         final String tmcErrorResponse = "TMC_RESPONSE_ERROR";
         final String tmcInvalidArgumentsError = "TMC_INVALID_ARGUMENTS_ERROR";
         final String tmcTechnicalError = "TMC_TECHNICAL_ERROR";
+        final String tmcAuthenticationError = "TMC_AUTHENTICATION_ERROR";
 
         try {
             return execution.execute();
@@ -117,6 +118,8 @@ public class TMCTaskConnector implements OutboundConnectorProvider {
             throw buildException(e, tmcErrorResponse);
         } catch (TMCConnectionArgumentException e) {
             throw buildException(e, tmcInvalidArgumentsError);
+        } catch (TMCAuthenticationException e) {
+            throw buildException(e, tmcAuthenticationError);
         } catch (TMCConnectorException | RuntimeException e) {
             throw buildException(e, tmcTechnicalError);
         }

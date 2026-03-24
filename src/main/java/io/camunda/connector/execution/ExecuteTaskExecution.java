@@ -34,7 +34,7 @@ public class ExecuteTaskExecution extends AbstractConnectorExecution<JobExecutio
     public JobExecutionStatusV21 execute() throws TMCConnectorException {
         LOGGER.info("Process: execute task");
 
-        client.tmcAuthenticate(request.authentication());
+        processAuthenticate(request);
         final URI uri = TMCHttpClient.createUri(
                 request.endpoint(),
                 request.payload().queryParameters(),

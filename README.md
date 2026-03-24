@@ -142,6 +142,7 @@ If the operation fails during execution, the connector throws the following BPMN
 | Error Code                    | Description / Cause                                                |
 |-------------------------------|--------------------------------------------------------------------|
 | TMC_INVALID_ARGUMENTS_ERROR   | Invalid user input (id not found, wrong authentication)            |
+| TMC_AUTHENTICATION_ERROR      | Authentication Error                                               |
 | TMC_RESPONSE_ERROR            | TMC Request wasnt successful and TMC answered with error HTTP Code |
 | TMC_CONNECTION_FAILED         | Connection to the TMC failed                                       |
 | TMC_TECHNICAL_ERROR           | technical error                                                    |
@@ -216,13 +217,14 @@ Check the [API documentation](https://talend.qlik.dev/apis/processing/2021-03/#t
 
 #### Error
 
-| Error Code                     | Description / Cause                                                |
-|--------------------------------|--------------------------------------------------------------------|
-| TASK_EXECUTION_DISCONNECTED    | Detaching the monitoring due to exceeding the retry limit          |
-| TMC_INVALID_ARGUMENTS_ERROR    | Invalid user input (id not found, wrong authentication)            |
-| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                       |
-| TMC_TECHNICAL_ERROR            | technical error                                                    |
+| Error Code                  | Description / Cause                                                |
+|-----------------------------|--------------------------------------------------------------------|
+| TASK_EXECUTION_DISCONNECTED | Detaching the monitoring due to exceeding the retry limit          |
+| TMC_INVALID_ARGUMENTS_ERROR | Invalid user input (id not found, wrong authentication)            |
+| TMC_AUTHENTICATION_ERROR    | Authentication Error                                               |
+| TMC_RESPONSE_ERROR          | TMC Request wasnt successful and TMC answered with error HTTP Code |
+| TMC_CONNECTION_FAILED       | Connection to the TMC failed                                       |
+| TMC_TECHNICAL_ERROR         | technical error                                                    |
 
 ### Get Task Execution Status
 
@@ -279,12 +281,13 @@ Check the [API documentation](https://talend.qlik.dev/apis/processing/2021-03/#t
 
 If the operation fails during execution, the connector throws the following BPMN Errors which can be handled using boundary error events in the process model.
 
-| Error Code                      | Description / Cause                                                  |
-|---------------------------------|----------------------------------------------------------------------|
-| TMC_INVALID_ARGUMENTS_ERROR     | Invalid user input (id not found, wrong authentication)              |
-| TMC_RESPONSE_ERROR              | TMC Request wasnt successful and TMC answered with error HTTP Code   |
-| TMC_CONNECTION_FAILED           | Connection to the TMC failed                                         |
-| TMC_TECHNICAL_ERROR             | technical error                                                      |
+| Error Code                  | Description / Cause                                                |
+|-----------------------------|--------------------------------------------------------------------|
+| TMC_INVALID_ARGUMENTS_ERROR | Invalid user input (id not found, wrong authentication)            |
+| TMC_AUTHENTICATION_ERROR    | Authentication Error                                               |
+| TMC_RESPONSE_ERROR          | TMC Request wasnt successful and TMC answered with error HTTP Code |
+| TMC_CONNECTION_FAILED       | Connection to the TMC failed                                       |
+| TMC_TECHNICAL_ERROR         | technical error                                                    |
 
 ### Get Available Tasks Executions
 
@@ -369,12 +372,13 @@ taskExecutionStatus.items[i.taskId = id]
 If the operation fails during execution, the connector throws the following BPMN Errors which can be handled using 
 boundary error events in the process model.
 
-| Error Code                      | Description / Cause                                                |
-|---------------------------------|--------------------------------------------------------------------|
-| TMC_INVALID_ARGUMENTS_ERROR     | Invalid user input (id not found, wrong authentication)            |
-| TMC_RESPONSE_ERROR              | TMC Request wasnt successful and TMC answered with error HTTP Code |
-| TMC_CONNECTION_FAILED           | Connection to the TMC failed                                       |
-| TMC_TECHNICAL_ERROR             | technical error                                                    |
+| Error Code                   | Description / Cause                                                |
+|------------------------------|--------------------------------------------------------------------|
+| TMC_INVALID_ARGUMENTS_ERROR  | Invalid user input (id not found, wrong authentication)            |
+| TMC_AUTHENTICATION_ERROR     | Authentication Error                                               |
+| TMC_RESPONSE_ERROR           | TMC Request wasnt successful and TMC answered with error HTTP Code |
+| TMC_CONNECTION_FAILED        | Connection to the TMC failed                                       |
+| TMC_TECHNICAL_ERROR          | technical error                                                    |
 
 ### Get Task Executions
 
@@ -465,6 +469,7 @@ taskExecutionStatus.items[i.taskId = id]
 | Error Code                  | Description / Cause                                                |
 |-----------------------------|--------------------------------------------------------------------|
 | TMC_INVALID_ARGUMENTS_ERROR | Invalid user input (id not found, wrong authentication)            |
+| TMC_AUTHENTICATION_ERROR    | Authentication Error                                               |
 | TMC_RESPONSE_ERROR          | TMC Request wasnt successful and TMC answered with error HTTP Code |
 | TMC_CONNECTION_FAILED       | Connection to the TMC failed                                       |
 | TMC_TECHNICAL_ERROR         | technical error                                                    |
@@ -503,12 +508,13 @@ Typical use cases include:
 
 #### Error
 
-| Error Code                     | Description / Cause                                                |
-|--------------------------------|--------------------------------------------------------------------|
-| TMC_INVALID_ARGUMENTS_ERROR    | Invalid user input (id not found, wrong authentication)            |
-| TMC_RESPONSE_ERROR             | TMC Request wasnt successful and TMC answered with error HTTP Code |
-| TMC_CONNECTION_FAILED          | Connection to the TMC failed                                       |
-| TMC_TECHNICAL_ERROR            | technical error                                                    |
+| Error Code                   | Description / Cause                                                |
+|------------------------------|--------------------------------------------------------------------|
+| TMC_INVALID_ARGUMENTS_ERROR  | Invalid user input (id not found, wrong authentication)            |
+| TMC_AUTHENTICATION_ERROR     | Authentication Error                                               |
+| TMC_RESPONSE_ERROR           | TMC Request wasnt successful and TMC answered with error HTTP Code |
+| TMC_CONNECTION_FAILED        | Connection to the TMC failed                                       |
+| TMC_TECHNICAL_ERROR          | technical error                                                    |
 
 ### Terminate Task Execution
 
@@ -533,12 +539,13 @@ The connector task completes without producing output variables.
 
 #### Error
 
-| Error Code                   | Description / Cause                                                |
-|------------------------------|--------------------------------------------------------------------|
-| TMC_INVALID_ARGUMENTS_ERROR  | Invalid user input (id not found, wrong authentication)            |
-| TMC_RESPONSE_ERROR           | TMC Request wasnt successful and TMC answered with error HTTP Code |
-| TMC_CONNECTION_FAILED        | Connection to the TMC failed                                       |
-| TMC_TECHNICAL_ERROR          | technical error                                                    |
+| Error Code                  | Description / Cause                                                |
+|-----------------------------|--------------------------------------------------------------------|
+| TMC_INVALID_ARGUMENTS_ERROR | Invalid user input (id not found, wrong authentication)            |
+| TMC_AUTHENTICATION_ERROR    | Authentication Error                                               |
+| TMC_RESPONSE_ERROR          | TMC Request wasnt successful and TMC answered with error HTTP Code |
+| TMC_CONNECTION_FAILED       | Connection to the TMC failed                                       |
+| TMC_TECHNICAL_ERROR         | technical error                                                    |
 
 ## Developer Guide - getting started
 

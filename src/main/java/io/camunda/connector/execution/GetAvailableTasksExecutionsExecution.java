@@ -20,7 +20,7 @@ public class GetAvailableTasksExecutionsExecution extends AbstractConnectorExecu
     public PageTaskExecutionStatus execute() throws TMCConnectorException {
         LOGGER.info("Process: Get available Tasks Executions");
 
-        client.tmcAuthenticate(request.authentication());
+        processAuthenticate(request);
 
         final URI uri = TMCHttpClient.createUri(
                 request.endpoint(),

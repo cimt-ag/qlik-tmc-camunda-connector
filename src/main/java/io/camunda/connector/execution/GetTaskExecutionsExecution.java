@@ -22,7 +22,7 @@ public class GetTaskExecutionsExecution extends AbstractConnectorExecution<PageT
     public PageTaskExecutionStatus execute() throws TMCConnectorException {
         LOGGER.info("Process: Get task execution");
 
-        client.tmcAuthenticate(request.authentication());
+        processAuthenticate(request);
 
         Map<String, Object> queryParams = Map.of();
         if (request.payload() != null && request.payload().queryParameters() != null) {

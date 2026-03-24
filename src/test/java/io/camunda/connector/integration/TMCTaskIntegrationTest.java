@@ -44,14 +44,11 @@ public class TMCTaskIntegrationTest extends AbstractTMCConnectorTest {
 
     @Test
     public void getTaskAPICallTest() {
-        TMCPayloadRequest request = new TMCPayloadRequest(
-                authentication,
-                endpoint,
-                new TMCPayload(Map.of(
+        TMCPayloadRequest request = createTMCPayloadRequest(
+                Map.of(
                         "environment", TMC_ENV,
                         "name", TASK_NAME
-                ), Map.of())
-        );
+                ), Map.of());
 
         var result = tmcTaskConnector.getAvailableTasks(request);
 
@@ -74,17 +71,16 @@ public class TMCTaskIntegrationTest extends AbstractTMCConnectorTest {
     }
 
     @Test
-    public void postExecuteTaskTest() throws Exception {
-        TMCPayloadRequest request = new TMCPayloadRequest(
-                authentication,
-                endpoint,
-                new TMCPayload(Map.of(), Map.of(
+    public void postExecuteTaskTest() {
+        TMCPayloadRequest request = createTMCPayloadRequest(
+                Map.of(),
+                Map.of(
                         "executable", TASK_ID,
                         "parameters", Map.of(),
                         "logLevel", "INFO",
                         "timeout", "3600"
 
-                ))
+                )
         );
 
         var result = tmcTaskConnector.executeTask(request, 0, 60, 100);
@@ -113,18 +109,13 @@ public class TMCTaskIntegrationTest extends AbstractTMCConnectorTest {
 
     @Test
     public void getAvailableTasksExecutions() {
-        TMCPayloadRequest request = new TMCPayloadRequest(
-                authentication,
-                endpoint,
-                new TMCPayload(
-                        Map.of(),
-                        Map.of(
-                                "environmentId", TMC_ENV,
-                                "status", TaskExecutionsFilters.StatusEnum.EXECUTION_SUCCESSFUL.getValue(),
-                                "lastDays", 15
-                        )
-                )
-        );
+        TMCPayloadRequest request = createTMCPayloadRequest(
+                Map.of(),
+                Map.of(
+                        "environmentId", TMC_ENV,
+                        "status", TaskExecutionsFilters.StatusEnum.EXECUTION_SUCCESSFUL.getValue(),
+                        "lastDays", 15
+                ));
 
         var result = tmcTaskConnector.getAvailableTasksExecutions(request);
 
@@ -133,13 +124,9 @@ public class TMCTaskIntegrationTest extends AbstractTMCConnectorTest {
 
     @Test
     public void getTasksExecutionsTest() {
-        TMCPayloadRequest request = new TMCPayloadRequest(
-                authentication,
-                endpoint,
-                new TMCPayload(
-                        Map.of(),
-                        Map.of()
-                )
+        TMCPayloadRequest request = createTMCPayloadRequest(
+                Map.of(),
+                Map.of()
         );
 
         var result = tmcTaskConnector.getTaskExecutions(request, TASK_ID);
